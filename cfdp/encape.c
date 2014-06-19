@@ -268,18 +268,28 @@ int NAK_PDU(struct NAK nak,unsigned char *CFDP_buffer_NAK,struct PDU_header *p )
 	unsigned char buffer0[8];
 	unsigned char buffer1[32];
 	unsigned char buffer2[32];
-	unsigned char buffer3[100];
-	unsigned char buffer_temp[109];
+	//unsigned char buffer3[100];
+	unsigned char buffer3[400];
+	//unsigned char buffer_temp[109];
+	unsigned char buffer_temp[409];
 	bit_exchange(8,nak.directive_code,buffer0);
 	chars2bits(buffer0,buffer_temp,8,0);
 	bit_exchange(32,nak.start_of_scope,buffer1);
 	chars2bits(buffer1,buffer_temp,32,8);
 	bit_exchange(32,nak.end_of_scope,buffer2);
 	chars2bits(buffer2,buffer_temp,32,40);
-	memcpy(buffer_temp+9,nak.NAK_offset,100);
-
-	PDU_encode(p,buffer_temp, CFDP_buffer_NAK,109);
-
+	//memcpy(buffer_temp+9,nak.NAK_offset,100);
+	int i = 0;
+	for(i = 0;i<100;i++)
+	{
+		buffer3[4*i+0] = nak.NAK_offset[i]>>24;
+		buffer3[4*i+1] = nak.NAK_offset[i]>>16;
+		buffer3[4*i+2] = nak.NAK_offset[i]>>8;
+		buffer3[4*i+3] = nak.NAK_offset[i];
+	}
+	memcpy(buffer_temp+9,buffer3,400);
+	//PDU_encode(p,buffer_temp, CFDP_buffer_NAK,109);
+	PDU_encode(p,buffer_temp, CFDP_buffer_NAK,409);
 
 	return 0;
 }

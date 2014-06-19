@@ -55,13 +55,16 @@ int check_missing(struct meta_data meta,struct NAK_flag *nakflag){
    int number;
    if(meta.file_size%data_length == 0)
    {
-	   number = meta.file_size/data_length;
+	number = meta.file_size/data_length;
+
 
    }
    else
    {
 	   number = meta.file_size/data_length+1;
    }
+
+	printf("the segment number is %d",number);	
    for(i = 0;i<number;i++)
    {
 	   if(CFDP_buffer_NAK[i] == 1)
@@ -85,6 +88,7 @@ int check_missing(struct meta_data meta,struct NAK_flag *nakflag){
 
 	return 0;
 }
+
 
 
 int sendfile(char *sourcefile_name,char *buffer,int file_size){
@@ -149,7 +153,7 @@ int sendfile(char *sourcefile_name,char *buffer,int file_size){
 
 	struct EOF_data eof = {4,0,0,file_size};
 	if(EOF_PDU(eof,buffer_EOF,p_eof)==0){
-		printf("have encaped EOF,%d\n",sizeof(buffer_EOF));
+		printf("have encaped EOF,%ld\n",sizeof(buffer_EOF));
 	}
 
 
@@ -219,6 +223,8 @@ int cfdp_open(char *sourcefile_name,char *destfile_name,char *buffer){
 
 	//send the metadata
 	metadata_send(sourcefile_name,destfile_name,file_size);
+	printf("have send the metadata\n");
+	sleep(2);
 	//send the file
 
 	sendfile(sourcefile_name,buffer,file_size);
@@ -239,7 +245,7 @@ int cfdp_put_request(int DestID,char *sourcefile_name,char *Destfile_name){
 int metadata_send(char *sourcefile_name,char *destfile_name,int file_size){
 
 	unsigned char buffer_meta[30];
-	struct PDU_header *p_meta;
+	struct PDU_header *p_meta ;
 	p_meta = (struct PDU_header *)malloc(sizeof(struct PDU_header));
 	p_meta->version = Version;
 	p_meta->type = file_dir;
@@ -313,10 +319,10 @@ int segment_procedure(int file_size,struct PDU_header *p, char *buffer){
     	else
     	{
     		memcpy(buffer_recvdata+4,buffer+offset,(file_size-offset));
-    		printf("it's the last segmentation %d\n",strlen(buffer_recvdata));
+    		printf("it's the last segmentation %ld\n",strlen(buffer_recvdata));
     	}
 
-    	//printf("the sending offset is %d,the number of segmentation is %d\n",offset,(n+1));
+    	printf("the sending offset is %d,the number of segmentation is %d\n",offset,(n+1));
     	PDU_encode(p,buffer_recvdata, buffer_send,(data_length+4));
     	send_PDU(buffer_send,sizeof(buffer_send));
     	offset = offset + data_length;

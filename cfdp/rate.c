@@ -23,10 +23,12 @@ void* rate_thread(void *ptr)
 		*/
 	int times = 1;
 	int rate;
+	int temp = 0;
 	while(1)
 	{
-	sleep(3);
-	rate = number_of_received_pacekt/times;
+	sleep(1);
+	rate = number_of_received_pacekt - temp;
+	temp = number_of_received_pacekt;
 	printf("******************%d\n",rate);
 	times++;
 	}
