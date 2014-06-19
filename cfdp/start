@@ -1,0 +1,5 @@
+#! /bin/sh
+rm /tmp/bpd >/dev/null 2>&1
+rm /tmp/bp_* >/dev/null 2>&1
+./build/bpd
+

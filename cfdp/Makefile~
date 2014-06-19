@@ -1,0 +1,53 @@
+OBJ_DIR=build
+SRC_DIR=.
+
+all: $(OBJ_DIR) $(OBJ_DIR)/bpd $(OBJ_DIR)/bp.o send recv CNAK
+
+send: send.c
+	gcc -g -o send send.c $(OBJ_DIR)/bp.o \
+		$(OBJ_DIR)/uri.o
+
+recv: recv.c
+	gcc -g -o recv recv.c $(OBJ_DIR)/bp.o \
+		$(OBJ_DIR)/uri.o
+
+CNAK: CNAK.c
+	gcc -g -o CNAK CNAK.c encape.c NAK_thread.c recv_thread.c primitive.c -lrt -lpthread $(OBJ_DIR)/bp.o \
+		$(OBJ_DIR)/uri.o
+
+
+$(OBJ_DIR):
+	@mkdir -p $(OBJ_DIR)
+
+$(OBJ_DIR)/bpd: bpd.c bp.h $(OBJ_DIR)/bpd_bind_list.o \
+	$(OBJ_DIR)/bpd_bundle_list.o\
+	$(OBJ_DIR)/bpd_forward_table.o \
+	$(OBJ_DIR)/uri.o $(OBJ_DIR)/bundle.o
+	gcc -g -o $(OBJ_DIR)/bpd bpd.c $(OBJ_DIR)/bpd_bind_list.o \
+		$(OBJ_DIR)/bpd_bundle_list.o \
+		$(OBJ_DIR)/bpd_forward_table.o \
+		$(OBJ_DIR)/uri.o $(OBJ_DIR)/bundle.o \
+		-lpthread
+
+$(OBJ_DIR)/bpd_bind_list.o: bpd_bind_list.c bpd_bind_list.h bp.h
+	gcc -g -c -o $(OBJ_DIR)/bpd_bind_list.o bpd_bind_list.c
+
+$(OBJ_DIR)/bpd_bundle_list.o: bpd_bundle_list.c bpd_bundle_list.h bp.h
+	gcc -g -c -o $(OBJ_DIR)/bpd_bundle_list.o bpd_bundle_list.c
+
+$(OBJ_DIR)/bpd_forward_table.o: bpd_forward_table.c bpd_forward_table.h bp.h
+	gcc -g -c -o $(OBJ_DIR)/bpd_forward_table.o bpd_forward_table.c
+
+$(OBJ_DIR)/bp.o: bp.c bp.h
+	gcc -g -c -o $(OBJ_DIR)/bp.o bp.c
+
+$(OBJ_DIR)/uri.o: uri.c uri.h
+	gcc -g -c -o $(OBJ_DIR)/uri.o uri.c
+		
+$(OBJ_DIR)/bundle.o: bundle.c bundle.h
+	gcc -g -c -o $(OBJ_DIR)/bundle.o bundle.c
+
+clean: 
+	rm -rf $(OBJ_DIR); \
+	rm -f send recv CNAK
+
