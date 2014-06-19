@@ -5,7 +5,7 @@
 #include "uri.h"
 
 #define FORWARD_TABLE_MAXSIZE		1000
-#define FORWARD_TABLE_CONF_FILE_PATH	"forward_table"
+#define FORWARD_TABLE_CONF_FILE_PATH	"/etc/bitdtn/forward_table"
 #define FORWARD_TABLE_CONF_LINE_MAXLEN	2096
 
 extern struct URI bpd_forward_table_self_bp_endpoint_id;
