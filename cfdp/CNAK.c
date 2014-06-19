@@ -31,6 +31,8 @@
 #include <errno.h>
 #include <signal.h>
 #include "cfdp.h"
+#include "../bp/bp.h"
+#include "../bp/uri.h"
 
 
 
@@ -48,7 +50,7 @@
 //////////////here we suggest the transaction is one to one,then we just consider the TSN///////////////////
 ///////////////NAK is set as 109 bytes/////////////////////////////
 int TSN;
-char buffer[1024];
+
 int bpsock;
 
 struct URI dst_bp_endpoint_id;
@@ -88,8 +90,9 @@ int send_PDU(char *buffer,int PDU_size){
 		printf("sending PDU:have send the PDU %d\n",PDU_size);
 
 
-
+		usleep(1000);
 		bp_sendto(bpsock, &dst_bp_endpoint_id, buffer, PDU_size,0);
+		//printf("the dst_bp_endpoint_id is %s:%s\n",dst_bp_endpoint_id.scheme,dst_bp_endpoint_id.ssp);
 
 	return 0;
 }
@@ -143,8 +146,8 @@ void init(){
 	}
 */
 	       bpsock = bp_socket();
-			uri_assign(&src_bp_endpoint_id, "bitdtn", "A");
-			uri_assign(&dst_bp_endpoint_id, "bitdtn", "C");
+			uri_assign(&src_bp_endpoint_id, "bitdtn", "C");
+			uri_assign(&dst_bp_endpoint_id, "bitdtn", "A");
 			bp_bind(bpsock, &src_bp_endpoint_id);
 }
 

@@ -94,10 +94,10 @@ int main(int argc, char** argv)
 		item_ptr = (struct ITEM*)hashtable_search(hashtable_ptr, key);
 		if ((struct HASHITEM*)item_ptr != ptr_tab[i]){
 			printf("error %d item_ptr != ptr_tab[%d]\n", i, i);
-			printf("item_ptr = 0x%X, ptr_tab[%d] = 0x%X\n",
-				(unsigned)item_ptr,
+			printf("item_ptr = 0x%p, ptr_tab[%d] = 0x%p\n",
+				item_ptr,
 				i,
-				(unsigned)ptr_tab[i]);
+				ptr_tab[i]);
 			printf("item_ptr->key = %u:%u\n",
 				*(unsigned*)item_ptr->key,
 				*(unsigned*)((char*)item_ptr->key+4));

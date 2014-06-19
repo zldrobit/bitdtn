@@ -9,7 +9,7 @@
 #include "cfdp.h"
 
 
-
+extern pthread_t tid_rate_thread;
  void* NAK_thread(void *ptr){
 
 	struct NAK_arguments *nakargu;
@@ -31,7 +31,7 @@
 		nakflag->flag = 0;
 		struct NAK nak;
 							struct PDU_header *p_nak;
-							unsigned char NAK_buffer[123];
+							unsigned char NAK_buffer[423];
 							p_nak = (struct PDU_header *)malloc(sizeof(struct PDU_header));
 							p_nak->version = Version;
 							p_nak->type = file_dir;
@@ -51,29 +51,42 @@
 
 							nak.directive_code = 8;
 
-							memcpy(nak.NAK_offset,nakargu->nakflag->buffer,nakargu->nakflag->buffer[0]+1);
-							printf("the sending NAK is %d,%d\n",nak.NAK_offset[0],nak.NAK_offset[1]);
+							//memcpy(nak.NAK_offset,nakargu->nakflag->buffer,nakargu->nakflag->buffer[0]+1);
+							memcpy(nak.NAK_offset,nakargu->nakflag->buffer,100);
+							int k;
+							for(k=0;k<nak.NAK_offset[0];k++)
+							{
+								printf("the sending NAK is %d\n",nak.NAK_offset[k]);
+							}
 							NAK_PDU(nak,NAK_buffer,nakargu->p );
 							send_PDU(NAK_buffer,sizeof(NAK_buffer));
 
 		clock_gettime(CLOCK_REALTIME,&ts);   //获取时间
-		ts.tv_sec += 3;   //经过3秒钟
+		ts.tv_sec += 5;   //经过3秒钟
 		ret = pthread_cond_timedwait(&nak_cond,&nak_mtx,&ts);
 		if (ret == ETIMEDOUT){  //超时
 
 			printf(" NAK ETIMEDOUT\n");
 			check_missing(nakargu->meta,nakflag);
-			nakargu->nakflag->flag =nakflag->flag;
+			nakargu->nakflag =nakflag;
+			
 			printf("the nakflag is %d\n",nakflag->flag);
 			if(nakflag->flag == 0)
 			{
-				write_file(nakargu->meta,nakargu->fp);
+				write_file(nakargu->meta,nakargu->fp)	;
+		pthread_cancel(tid_rate_thread);
                 printf("the missing part is recieved all\n");
-                pthread_cond_destroy(&nak_cond);
+                //pthread_cond_destroy(&nak_cond);
+				return NULL;
+		
 				break;
 			}
-
-
+			else
+			{
+				
+				NAK_PDU(nak,NAK_buffer,nakargu->p );
+				send_PDU(NAK_buffer,sizeof(NAK_buffer));
+			}
 			//	break;
 
 		}
@@ -81,8 +94,8 @@
 		else {    //未超时  有中断
 
 			printf("NAK INTERRUPT\n");
-			pthread_cond_destroy(&nak_cond);
-
+			//pthread_cond_destroy(&nak_cond);
+			return NULL;
 			break;
 
 

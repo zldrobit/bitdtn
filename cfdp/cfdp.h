@@ -34,11 +34,12 @@
 #define FILE_NAME_MAX_SIZE 8
 #define Version 0
 #define header_length 16
-#define data_length 55
+#define data_length 1000
 int TSN;
-char buffer[1024];
-char CFDP_buffer_data[1000][data_length];
-char CFDP_buffer_NAK[1000];
+char buffer[3000000];
+char CFDP_buffer_data[100000][data_length];
+//char CFDP_buffer_NAK[1000];
+int CFDP_buffer_NAK[100000];
 int number_of_received_pacekt;
 
 
@@ -66,8 +67,8 @@ enum CRC_flag{
 
 struct NAK_flag{
 	int flag;
-	char buffer[100];
-
+	//char buffer[100];
+	int buffer[100];
 };
 
 struct PDU_header{
@@ -135,7 +136,8 @@ struct NAK{
 	int directive_code;  //8bits
 	int start_of_scope;  //32bits
 	int end_of_scope;    //32bits
-	char NAK_offset[100];  //100byte
+	//char NAK_offset[100];  //100byte 
+	int NAK_offset[100];  //400byte
 
 
 
