@@ -1,0 +1,6 @@
+1. bp is stateless
+2. sdnv encode is not compact
+3. internet socket usleep 300 for udp correctness
+4. 32 bits time size will exceed in year 2136, and will be down cast in 64 bits
+   machines. (considering time(), exceed in year 2106)
+5. Doubly linked list and hastable don't support inner struct for value, or else we need a deconstruct function?

@@ -1,0 +1,4 @@
+# files to ignore
+bp/build
+bp/send
+bp/recv

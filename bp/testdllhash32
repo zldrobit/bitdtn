@@ -1,0 +1,18 @@
+#!/bin/bash
+ntrials=0
+
+while true; do
+	ntrials=$((ntrials + 1))
+	typeset -i nitems=0x`xxd -l 2 -p /dev/urandom`
+	while [ $nitems -gt 10000000 ]; do
+		typeset -i nitems=0x`xxd -l 2 -p /dev/urandom`
+	done
+	typeset -i nslots=0x`xxd -l 2 -p /dev/urandom`
+	# echo ${ntrials}th trials nitems=${nitems} nslots=$nslots:
+	printf "%dth trials nitems=%d nslots=%d:" $ntrials $nitems $nslots
+	if ! ./build/testdllhash32 $nitems $nslots; then
+		echo ERROR!
+		exit 1
+	fi
+	printf "PASSED\n"
+done
