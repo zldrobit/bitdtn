@@ -123,7 +123,7 @@ int file_segment_recv_indication(){
 	;
 }
 
-void init(){
+void init(int argc,char**argv){
 
 	TSN = 0;
 	bzero(CFDP_buffer_NAK,1000);
@@ -146,8 +146,7 @@ void init(){
 	}
 */
 	       bpsock = bp_socket();
-			uri_assign(&src_bp_endpoint_id, "bitdtn", "C");
-			uri_assign(&dst_bp_endpoint_id, "bitdtn", "A");
+			uri_assign(&src_bp_endpoint_id, "bitdtn", argv[1]);
 			bp_bind(bpsock, &src_bp_endpoint_id);
 }
 
@@ -156,14 +155,18 @@ int main(int argc, char **argv){
 
 	pthread_t tid_recv_thread;
 	void* ret_recv;
-	init();
+	init(argc,argv);
 	pthread_create(&tid_recv_thread, NULL, recv_thread, NULL);
 
 	char file_name[FILE_NAME_MAX_SIZE+1];
+	char dest_add[1];
 	//char buffer[1024];
 	//bzero(buffer,1024);
 	char recv_file_name[] = {'a','b','c'};
 	bzero(file_name, FILE_NAME_MAX_SIZE+1);
+	printf("please input the destination address:\t");
+	scanf("%s",dest_add);
+	 uri_assign(&dst_bp_endpoint_id, "bitdtn", dest_add);
 	printf("Please Input File Name On Server:\t");
 	scanf("%s", file_name);
 	cfdp_put_request(1,file_name,recv_file_name);
