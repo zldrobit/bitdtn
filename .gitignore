@@ -4,4 +4,8 @@ bp/send
 bp/recv
 
 cfdp/build
+cfdp/CNAK
+cfdp/abc
+
+*~
 
