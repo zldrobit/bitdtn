@@ -50,10 +50,12 @@ void bpd_forward_table_parse_conf()
 	isorigin = 1;
 
 	while (1){
+		fgets(buf, FORWARD_TABLE_CONF_LINE_MAXLEN, f);
 		if (feof(f)){
 			break;
 		}
-		fgets(buf, FORWARD_TABLE_CONF_LINE_MAXLEN, f);
+		
+		printf("buf = %s\n", buf);
 		// printf("buf len = %d\n", strlen(buf));
 		
 	
@@ -84,7 +86,9 @@ void bpd_forward_table_parse_conf()
 		if (tok1[0] == '#'){
 			goto END_OF_WHILE;	
 		}
+		printf("tok1 = %s\n", tok1);
 		strcpy(tok2, strtok(NULL, " 	"));
+		printf("tok2 = %s\n", tok2);
 
 		/* parse original uri and iaddr */
 		// printf("tok1 = %s\n", tok1); 
@@ -125,7 +129,7 @@ void bpd_forward_table_parse_conf()
 				&next_bp_endpoint_id, &next_iaddr);
 		}
 		isorigin = 1 - isorigin;
-		
+
 END_OF_WHILE:
 		;
 	}
