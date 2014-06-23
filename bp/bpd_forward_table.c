@@ -310,6 +310,7 @@ int bpd_forward(struct BUNDLE* bundle_ptr)
 		printf("<<<<<<<<<<leave bpd_forward()\n\n");
 		return 0;
 	}
+	bundle_print(bundle_ptr);
 	printf("<<<<<<<<<<leave bpd_forward()\n\n");
 	return -1;	
 }
