@@ -204,6 +204,7 @@ void bpd_bundle_list_send_custody_transfer_succeeded_signal(
 		"", "");
 
 	bundle_clear_bundle_proc_flags(&admin_record_bundle);
+	bundle_set_admin_record(&admin_record_bundle);
 
 	admin_record_bundle.iscustody = 0;
 
