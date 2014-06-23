@@ -277,6 +277,7 @@ int bpd_forward(struct BUNDLE* bundle_ptr)
 			// bundle_print(bundle_ptr);
 			bpd_process_admin_record(bundle_ptr);
 		}
+		bundle_print(bundle_ptr);
 		printf("<<<<<<<<<<leave bpd_forward()\n\n");
 		return 0;
 	}
@@ -290,6 +291,7 @@ int bpd_forward(struct BUNDLE* bundle_ptr)
 			bundle_ptr->payload_block_length, 0, 
 			(struct sockaddr*) &local_uaddr,
 			sizeof(local_uaddr));
+		bundle_print(bundle_ptr);
 		printf("<<<<<<<<<<leave bpd_forward()\n\n");
 		return 0;
 	}
@@ -307,6 +309,7 @@ int bpd_forward(struct BUNDLE* bundle_ptr)
 			sizeof(remote_iaddr));
 		// for assurance of the udp's correctness
 		usleep(300);
+		bundle_print(bundle_ptr);
 		printf("<<<<<<<<<<leave bpd_forward()\n\n");
 		return 0;
 	}
