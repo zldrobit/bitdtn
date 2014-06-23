@@ -9,6 +9,7 @@
 #include <time.h>
 
 #include "bp.h"
+#include "bundle.h"
 #include "bpd_bundle_list.h"
 #include "bpd_forward_table.h"
 #include "dllhashtable.h"
@@ -109,6 +110,7 @@ void bpd_bundle_list_insert(struct BUNDLE* bundle_ptr)
 	// pthread_mutex_lock(&bpd_bundle_list_mutex);
 	bundle_encode(bundle_ptr);
 	// pthread_mutex_unlock(&bpd_bundle_list_mutex);
+
 	if (!bundle_ptr->iscustody){
 		bpd_bundle_list_pop(bundle_ptr);
 	}

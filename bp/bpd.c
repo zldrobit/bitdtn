@@ -65,13 +65,7 @@ void* bpd_isock_recv_thread(void* arg)
 			memcpy(bundle.bundle, buffer, len);
 			bundle_decode(&bundle);
 			bundle_print(&bundle);
-			if (bundle_is_admin_record(&bundle)){
-				/* process admin record */
-				bpd_process_admin_record(&bundle);
-			}
-			else { /* normal data payload */
-				bpd_bundle_list_insert(&bundle);
-			}
+			bpd_bundle_list_insert(&bundle);
 		}
 		else {
 			perror("bpd_isock_recv_thread recvfrom error");
