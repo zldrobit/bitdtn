@@ -122,8 +122,8 @@ void bpd_process_signal_send(struct BPD_SEND* signal_send_ptr,
 	// 	src_bp_endpoint_id);
 	uri_copy(&signal_send_ptr->src_bp_endpoint_id,
 		src_bp_endpoint_id_ptr);
-	bundle_clear_bundle_proc_flags(
-		(struct BUNDLE*) &signal_send_ptr->version);
+	// bundle_clear_bundle_proc_flags(
+	// 	(struct BUNDLE*) &signal_send_ptr->version);
 
 	// tm_dtn_epoch.tm_sec = 0;
 	// tm_dtn_epoch.tm_min = 0;

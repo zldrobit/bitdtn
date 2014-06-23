@@ -263,24 +263,27 @@ int bpd_forward(struct BUNDLE* bundle_ptr)
 	printf("enter bpd_foward()\n");
 	origin_bp_endpoint_id = bundle_ptr->dst_bp_endpoint_id;
 
-	// if dispatch
-	i = bpd_bind_list_find_by_bp_endpoint_id(&origin_bp_endpoint_id);	
-	if (i != -1){
-		printf("dispatch branch\n");
-		if (bundle_is_admin_record(bundle_ptr)){
+	// if to self forward table
+	if (uri_compare(&origin_bp_endpoint_id,
+		&bpd_forward_table_self_bp_endpoint_id) == 0){
+		printf("self forward table branch\n");	
+		//if (bundle_is_admin_record(bundle_ptr)){
+		if (bundle_ptr->isadmin){
 			printf("bundle_is_admin_record branch!\n");
 			bundle_print(bundle_ptr);
 			bpd_process_admin_record(bundle_ptr);
 		}
-		else {
-			printf("local uaddr\n");
-			local_uaddr = bpd_bind_list.bind_structs[i].uaddr;
-			bundle_print(bundle_ptr);
-			sendto(bpd_usock, bundle_ptr->payload, 
-				bundle_ptr->payload_block_length, 0, 
-				(struct sockaddr*) &local_uaddr,
-				sizeof(local_uaddr));
-		}
+	}
+	// if dispatch
+	i = bpd_bind_list_find_by_bp_endpoint_id(&origin_bp_endpoint_id);	
+	if (i != -1){
+		printf("dispatch branch\n");
+		local_uaddr = bpd_bind_list.bind_structs[i].uaddr;
+		bundle_print(bundle_ptr);
+		sendto(bpd_usock, bundle_ptr->payload, 
+			bundle_ptr->payload_block_length, 0, 
+			(struct sockaddr*) &local_uaddr,
+			sizeof(local_uaddr));
 		return 0;
 	}
 
