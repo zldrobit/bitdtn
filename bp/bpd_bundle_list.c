@@ -136,6 +136,7 @@ void bpd_bundle_list_insert(struct BUNDLE* bundle_ptr)
 
 			uri_copy(&new_bundle_ptr->custodian_bp_endpoint_id, 
 				&bpd_forward_table_custodian_bp_endpoint_id);
+			bundle_encode(new_bundle_ptr);
 		
 			key = (char*)malloc(
 				sizeof(BPD_BUNDLE_LIST_HASHKEY_LEN));
