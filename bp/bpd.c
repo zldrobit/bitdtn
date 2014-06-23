@@ -23,6 +23,8 @@ struct sockaddr_in bpd_iaddr;
 pthread_mutex_t bpd_creation_sequence_number_mutex = PTHREAD_MUTEX_INITIALIZER;
 unsigned int bpd_creation_sequence_number_counter = 0;
 
+int dropped[101] = {0};
+
 void bpd_process_recv_bundle(char* buffer)
 {
 
@@ -70,7 +72,26 @@ void* bpd_isock_recv_thread(void* arg)
 				bpd_process_admin_record(&bundle);
 			}
 			else { /* normal data payload */
-				bpd_bundle_list_insert(&bundle);
+				isdrop = 0;
+				if (payload[0] == '1' && payload[1] == '\0'){
+					/* drop once */
+					if (!dropped[1]){
+						dropped[1] = 1;
+						isdrop = 1;
+					}
+				}
+				else if (payload[0] == '1' &&
+					payload[1] == '0' &&
+					payload[2] == '0'){
+					/* drop once */
+					if (!dropped[100]){
+						dropped[100] = 1;
+						isdrop = 1;
+					}
+				}
+				if (!isdrop){
+					bpd_bundle_list_insert(&bundle);
+				}
 			}
 		}
 		else {
