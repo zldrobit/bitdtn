@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -153,6 +154,10 @@ void bpd_bundle_list_delete(unsigned int creation_time,
 	unsigned int creation_sequence_number)
 {
 	char* key;
+	
+	printf("bpd_bundle_list_delete()\n");
+	printf("creation_time = %u\n", creation_time);
+        printf("creation_sequence_number = %u\n", creation_sequence_number);
 
 	key = (char*)malloc(BPD_BUNDLE_LIST_HASHKEY_LEN);
 	*(unsigned int*)key = creation_time;

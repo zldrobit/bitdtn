@@ -266,12 +266,14 @@ int bpd_forward(struct BUNDLE* bundle_ptr)
 	// if dispatch
 	i = bpd_bind_list_find_by_bp_endpoint_id(&origin_bp_endpoint_id);	
 	if (i != -1){
+		printf("dispatch branch\n");
 		if (bundle_is_admin_record(bundle_ptr)){
 			printf("bundle_is_admin_record branch!\n");
 			bundle_print(bundle_ptr);
 			bpd_process_admin_record(bundle_ptr);
 		}
 		else {
+			printf("local uaddr\n");
 			local_uaddr = bpd_bind_list.bind_structs[i].uaddr;
 			bundle_print(bundle_ptr);
 			sendto(bpd_usock, bundle_ptr->payload, 
@@ -286,6 +288,7 @@ int bpd_forward(struct BUNDLE* bundle_ptr)
 	i = bpd_forward_table_find_by_origin_bp_endpoint_id(
 		&origin_bp_endpoint_id);
 	if (i != -1){
+		printf("forward branch\n");
 		remote_iaddr = 
 			bpd_forward_table.forward_structs[i].next_iaddr;
 		sendto(bpd_isock, bundle_ptr->bundle, 

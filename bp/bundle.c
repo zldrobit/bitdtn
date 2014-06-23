@@ -841,6 +841,8 @@ void bundle_print(struct BUNDLE* bundle_ptr)
 
 	printf("version = %d\n", bundle_ptr->version);
 	printf("bundle_proc_flags = %d\n", bundle_ptr->bundle_proc_flags);
+	printf("bundle is admin record = %d\n", 
+		bundle_is_admin_record(bundle_ptr));
 	printf("bundle iscustody = %d\n", bundle_ptr->iscustody);
 	printf("primary_block_length = %d\n", 
 		bundle_ptr->primary_block_length);
