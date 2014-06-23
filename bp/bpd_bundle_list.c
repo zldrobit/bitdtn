@@ -136,6 +136,7 @@ void bpd_bundle_list_insert(struct BUNDLE* bundle_ptr)
 
 			uri_copy(&new_bundle_ptr->custodian_bp_endpoint_id, 
 				&bpd_forward_table_custodian_bp_endpoint_id);
+			bundle_encode(new_bundle_ptr);
 		
 			key = (char*)malloc(
 				sizeof(BPD_BUNDLE_LIST_HASHKEY_LEN));
@@ -210,8 +211,8 @@ void bpd_bundle_list_send_custody_transfer_succeeded_signal(
 	// bundle_clear_bundle_proc_flags(&admin_record_bundle);
 	// bundle_set_admin_record(&admin_record_bundle);
 	admin_record_bundle.isadmin = 1;
-	printf("signal after set admin_record:\n");
-	bundle_print(&admin_record_bundle);
+	// printf("signal after set admin_record:\n");
+	// bundle_print(&admin_record_bundle);
 
 	admin_record_bundle.iscustody = 0;
 
@@ -230,10 +231,10 @@ void bpd_bundle_list_send_custody_transfer_succeeded_signal(
 		custody_signal.payload_len);
 	admin_record_bundle.payload_block_length = custody_signal.payload_len;
 
-	printf("signal before bundle encode:\n");
-	bundle_print(&admin_record_bundle);
+	// printf("signal before bundle encode:\n");
+	// bundle_print(&admin_record_bundle);
 	bundle_encode(&admin_record_bundle);
-	printf("signal before insert to bundle list:\n");
-	bundle_print(&admin_record_bundle);
+	// printf("signal before insert to bundle list:\n");
+	// bundle_print(&admin_record_bundle);
 	bpd_bundle_list_insert(&admin_record_bundle);
 }

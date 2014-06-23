@@ -193,6 +193,7 @@ int sdnv_encode_len(void* from, int from_len);
 void bundle_encode(struct BUNDLE* bundle);
 void bundle_decode(struct BUNDLE* bundle);
 void bundle_print(struct BUNDLE* bundle_ptr);
+void bundle_print_header(struct BUNDLE* bundle_ptr);
 
 
 

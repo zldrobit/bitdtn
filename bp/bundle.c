@@ -46,7 +46,7 @@ void bundle_clear_bundle_proc_flags(struct BUNDLE* bundle_ptr)
 
 int bundle_is_fragment(struct BUNDLE* bundle_ptr)
 {
-	return bundle_ptr->bundle_proc_flags & BUNDLE_PROC_FLAG_FRAGMENT;
+	return !!(bundle_ptr->bundle_proc_flags & BUNDLE_PROC_FLAG_FRAGMENT);
 
 }
 
@@ -57,8 +57,8 @@ void bundle_set_fragment(struct BUNDLE* bundle_ptr)
 
 int bundle_is_admin_record(struct BUNDLE* bundle_ptr)
 {
-	return bundle_ptr->bundle_proc_flags & 
-		BUNDLE_PROC_FLAG_ADMIN_RECORD;
+	return !!(bundle_ptr->bundle_proc_flags & 
+		BUNDLE_PROC_FLAG_ADMIN_RECORD);
 }
 
 void bundle_set_admin_record(struct BUNDLE* bundle_ptr)
@@ -69,8 +69,8 @@ void bundle_set_admin_record(struct BUNDLE* bundle_ptr)
 
 int bundle_is_not_fragmented(struct BUNDLE* bundle_ptr)
 {
-	return bundle_ptr->bundle_proc_flags & 
-		BUNDLE_PROC_FLAG_NOT_FRAGMENTED;
+	return !!(bundle_ptr->bundle_proc_flags & 
+		BUNDLE_PROC_FLAG_NOT_FRAGMENTED);
 }
 
 void bundle_set_not_fragmented(struct BUNDLE* bundle_ptr)
@@ -81,8 +81,8 @@ void bundle_set_not_fragmented(struct BUNDLE* bundle_ptr)
 
 int bundle_is_custody_transfer(struct BUNDLE* bundle_ptr)
 {
-	return bundle_ptr->bundle_proc_flags & 
-		BUNDLE_PROC_FLAG_CUSTODY_TRANSFER;
+	return !!(bundle_ptr->bundle_proc_flags & 
+		BUNDLE_PROC_FLAG_CUSTODY_TRANSFER);
 }
 
 void bundle_set_custody_transfer(struct BUNDLE* bundle_ptr)
@@ -93,8 +93,8 @@ void bundle_set_custody_transfer(struct BUNDLE* bundle_ptr)
 
 int bundle_is_dest_singleton(struct BUNDLE* bundle_ptr)
 {
-	return bundle_ptr->bundle_proc_flags & 
-		BUNDLE_PROC_FLAG_DEST_SINGLETON;
+	return !!(bundle_ptr->bundle_proc_flags & 
+		BUNDLE_PROC_FLAG_DEST_SINGLETON);
 }
 
 void bundle_set_dest_singleton(struct BUNDLE* bundle_ptr)
@@ -105,8 +105,8 @@ void bundle_set_dest_singleton(struct BUNDLE* bundle_ptr)
 
 int bundle_is_app_ack(struct BUNDLE* bundle_ptr)
 {
-	return bundle_ptr->bundle_proc_flags & 
-		BUNDLE_PROC_FLAG_APP_ACK;
+	return !!(bundle_ptr->bundle_proc_flags & 
+		BUNDLE_PROC_FLAG_APP_ACK);
 }
 
 void bundle_set_app_ack(struct BUNDLE* bundle_ptr)
@@ -117,8 +117,8 @@ void bundle_set_app_ack(struct BUNDLE* bundle_ptr)
 
 int bundle_is_reserved(struct BUNDLE* bundle_ptr)
 {
-	return bundle_ptr->bundle_proc_flags & 
-		BUNDLE_PROC_FLAG_RESERVED;
+	return !!(bundle_ptr->bundle_proc_flags & 
+		BUNDLE_PROC_FLAG_RESERVED);
 }
 
 void bundle_set_reserved(struct BUNDLE* bundle_ptr)
@@ -671,7 +671,7 @@ void bundle_encode(struct BUNDLE* bundle_ptr)
 		&bundle_ptr->creation_sequence_number, 4);
 	offset += tmp;
 
-	printf("encode lifetime offset = %d\n", offset);
+	// printf("encode lifetime offset = %d\n", offset);
 	tmp = sdnv_encode(bundle_ptr->bundle + offset,
 		&bundle_ptr->lifetime, 4);
 	offset += tmp;
@@ -898,6 +898,31 @@ void bundle_print(struct BUNDLE* bundle_ptr)
 	printf("bundle_len = %d\n", bundle_ptr->bundle_len);
 	printf("\n");
 	
+}
+
+void bundle_print_header(struct BUNDLE* bundle_ptr)
+{
+	int i;
+
+	printf("bundle_proc_flags = %d\n", bundle_ptr->bundle_proc_flags);
+	printf("bundle is admin record = %d\n", 
+		bundle_is_admin_record(bundle_ptr));
+	printf("bundle iscustody = %d\n", bundle_ptr->iscustody);
+	printf("dst bp endpoint id = %s:%s\n",
+		bundle_ptr->dst_bp_endpoint_id.scheme,
+		bundle_ptr->dst_bp_endpoint_id.ssp);
+	printf("src bp endpoint id = %s:%s\n",
+		bundle_ptr->src_bp_endpoint_id.scheme,
+		bundle_ptr->src_bp_endpoint_id.ssp);
+	printf("report_to bp endpoint id = %s:%s\n",
+		bundle_ptr->report_to_bp_endpoint_id.scheme,
+		bundle_ptr->report_to_bp_endpoint_id.ssp);
+	printf("custodian bp endpoint id = %s:%s\n",
+		bundle_ptr->custodian_bp_endpoint_id.scheme,
+		bundle_ptr->custodian_bp_endpoint_id.ssp);
+	printf("creation_time = %u\n", bundle_ptr->creation_time);
+	printf("creation_sequence_number = %u\n", 
+		bundle_ptr->creation_sequence_number);
 }
 
 void admin_record_clr_type(struct ADMIN_RECORD* admin_record_ptr)

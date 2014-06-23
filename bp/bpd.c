@@ -38,16 +38,16 @@ void bpd_process_admin_record(struct BUNDLE* bundle_ptr)
 	unsigned int creation_sequence_number;
 	struct CUSTODY_SIGNAL custody_signal;
 
-
-	creation_time = bundle_ptr->creation_time;
-	creation_sequence_number = bundle_ptr->creation_sequence_number;
-	
 	printf("bpd_process_admin_record()\n");
-	printf("creation_time = %u\n", creation_time);
-	printf("creation_sequence_number = %u\n", creation_sequence_number);
+
 	memcpy(custody_signal.payload, bundle_ptr->payload, 
 		bundle_ptr->payload_block_length);
 	custody_signal_decode(&custody_signal);
+	creation_time = custody_signal.creation_time;
+	creation_sequence_number = custody_signal.creation_sequence_number;
+	
+	printf("creation_time = %u\n", creation_time);
+	printf("creation_sequence_number = %u\n", creation_sequence_number);
 	if (custody_signal_is_succeeded_flag(&custody_signal)){
 		bpd_bundle_list_delete(creation_time, 
 			creation_sequence_number);
@@ -98,6 +98,7 @@ void* bpd_isock_recv_thread(void* arg)
 					bpd_bundle_list_insert(&bundle);
 				}
 			}
+			// bundle_print(&bundle);
 		}
 		else {
 			perror("bpd_isock_recv_thread recvfrom error");
@@ -189,10 +190,6 @@ void bpd_process_signal_send(struct BPD_SEND* signal_send_ptr,
 		bpd_creation_sequence_number_counter++);
 	pthread_mutex_unlock(&bpd_creation_sequence_number_mutex);
 
-	if (bundle_ptr->iscustody){
-		uri_copy(&bundle_ptr->custodian_bp_endpoint_id,
-			src_bp_endpoint_id_ptr);
-	}
 	bpd_bundle_list_insert(
 		(struct BUNDLE*) &signal_send_ptr->version);
 
