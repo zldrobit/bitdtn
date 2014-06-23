@@ -162,10 +162,6 @@ void bpd_process_signal_send(struct BPD_SEND* signal_send_ptr,
 		bpd_creation_sequence_number_counter++);
 	pthread_mutex_unlock(&bpd_creation_sequence_number_mutex);
 
-	if (bundle_ptr->iscustody){
-		uri_copy(&bundle_ptr->custodian_bp_endpoint_id,
-			src_bp_endpoint_id_ptr);
-	}
 	bpd_bundle_list_insert(
 		(struct BUNDLE*) &signal_send_ptr->version);
 
