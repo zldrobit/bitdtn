@@ -4,7 +4,8 @@ SRC_DIR=.
 all: $(OBJ_DIR) $(OBJ_DIR)/bpd $(OBJ_DIR)/bp.o send recv \
 	$(OBJ_DIR)/libhash.a \
 	$(OBJ_DIR)/testhash32 $(OBJ_DIR)/testhash64 \
-	$(OBJ_DIR)/testdllhash32 $(OBJ_DIR)/testdllhash64
+	$(OBJ_DIR)/testdllhash32 $(OBJ_DIR)/testdllhash64 \
+	sendmulti recvmulti
 
 send: send.c
 	gcc -g -o send send.c $(OBJ_DIR)/bp.o \
@@ -12,6 +13,13 @@ send: send.c
 
 recv: recv.c
 	gcc -g -o recv recv.c $(OBJ_DIR)/bp.o \
+		$(OBJ_DIR)/uri.o
+sendmulti: sendmulti.c
+	gcc -g -o sendmulti sendmulti.c $(OBJ_DIR)/bp.o \
+		$(OBJ_DIR)/uri.o
+
+recvmulti: recvmulti.c
+	gcc -g -o recvmulti recvmulti.c $(OBJ_DIR)/bp.o \
 		$(OBJ_DIR)/uri.o
 
 $(OBJ_DIR):
