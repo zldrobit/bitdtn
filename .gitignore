@@ -2,3 +2,7 @@
 bp/build
 bp/send
 bp/recv
+bp/sendmulti
+bp/recvmulti
+
+*.swp
