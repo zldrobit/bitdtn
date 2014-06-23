@@ -37,9 +37,13 @@ void bpd_process_admin_record(struct BUNDLE* bundle_ptr)
 	unsigned int creation_sequence_number;
 	struct CUSTODY_SIGNAL custody_signal;
 
+
 	creation_time = bundle_ptr->creation_time;
 	creation_sequence_number = bundle_ptr->creation_sequence_number;
 	
+	printf("bpd_process_admin_record()\n");
+	printf("creation_time = %u\n", creation_time);
+	printf("creation_sequence_number = %u\n", creation_sequence_number);
 	memcpy(custody_signal.payload, bundle_ptr->payload, 
 		bundle_ptr->payload_block_length);
 	custody_signal_decode(&custody_signal);
