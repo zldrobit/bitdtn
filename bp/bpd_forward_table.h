@@ -1,6 +1,10 @@
 #ifndef _BPD_FORWARD_TABLE_H_
 #define _BPD_FORWARD_TABLE_H_
 
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netinet/ip.h>
+
 #include "bp.h"
 #include "uri.h"
 
@@ -8,7 +12,7 @@
 #define FORWARD_TABLE_CONF_FILE_PATH	"/etc/bitdtn/forward_table"
 #define FORWARD_TABLE_CONF_LINE_MAXLEN	2096
 
-extern struct URI bpd_forward_table_self_bp_endpoint_id;
+extern struct URI bpd_forward_table_custodian_bp_endpoint_id;
 
 struct BPD_FORWARD_TABLE{
 	int nr;

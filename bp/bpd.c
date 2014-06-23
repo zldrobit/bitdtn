@@ -13,6 +13,7 @@
 #include "bundle.h"
 #include "bpd_bind_list.h"
 #include "bpd_bundle_list.h"
+#include "bpd_forward_table.h"
 
 #define BUFFER_SIZE		5000
 #define BUNDLE_LIST_MAXSIZE 	200
@@ -133,6 +134,8 @@ void bpd_process_signal_send(struct BPD_SEND* signal_send_ptr,
 	unsigned int time_2000;
 	struct tm tm_dtn_epoch;
 	struct BUNDLE* bundle_ptr;
+	struct URI report_to_bp_endpoint_id;
+	struct URI custodian_bp_endpoint_id;
 	
 	// strcpy(src_bp_endpoint_id,
 	// 	bpd_bind_list_map_uaddr_to_bp_endpoint_id(remote_uaddr_ptr));
@@ -149,6 +152,20 @@ void bpd_process_signal_send(struct BPD_SEND* signal_send_ptr,
 	// 	src_bp_endpoint_id);
 	uri_copy(&signal_send_ptr->src_bp_endpoint_id,
 		src_bp_endpoint_id_ptr);
+
+	uri_assign(&report_to_bp_endpoint_id, "", "");
+	uri_copy(&signal_send_ptr->report_to_bp_endpoint_id,
+		&report_to_bp_endpoint_id);
+
+	uri_assign(&custodian_bp_endpoint_id, "", "");
+	if (signal_send_ptr->iscustody){
+		uri_copy(&custodian_bp_endpoint_id, 
+			&bpd_forward_table_custodian_bp_endpoint_id);
+	}
+	uri_copy(&signal_send_ptr->custodian_bp_endpoint_id,
+		&custodian_bp_endpoint_id);
+
+	
 	// bundle_clear_bundle_proc_flags(
 	// 	(struct BUNDLE*) &signal_send_ptr->version);
 
