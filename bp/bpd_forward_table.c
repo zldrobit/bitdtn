@@ -262,9 +262,10 @@ int bpd_forward(struct BUNDLE* bundle_ptr)
 
 	printf("\n>>>>>>>>>>enter bpd_foward()\n");
 	origin_bp_endpoint_id = bundle_ptr->dst_bp_endpoint_id;
-	printf("origin_bp_endpoint_id = %s:%s\n",
-		origin_bp_endpoint_id.scheme,
-		origin_bp_endpoint_id.ssp);
+	// printf("origin_bp_endpoint_id = %s:%s\n",
+	// 	origin_bp_endpoint_id.scheme,
+	// 	origin_bp_endpoint_id.ssp);
+	bundle_print_header(bundle_ptr);
 
 	// if to custodian forward table
 	if (uri_compare(&origin_bp_endpoint_id,
@@ -273,7 +274,7 @@ int bpd_forward(struct BUNDLE* bundle_ptr)
 		//if (bundle_is_admin_record(bundle_ptr)){
 		if (bundle_ptr->isadmin){
 			printf("bundle is admin record branch!");
-			bundle_print(bundle_ptr);
+			// bundle_print(bundle_ptr);
 			bpd_process_admin_record(bundle_ptr);
 		}
 		printf("<<<<<<<<<<leave bpd_forward()\n\n");
@@ -284,7 +285,7 @@ int bpd_forward(struct BUNDLE* bundle_ptr)
 	if (i != -1){
 		printf("dispatch branch\n");
 		local_uaddr = bpd_bind_list.bind_structs[i].uaddr;
-		bundle_print(bundle_ptr);
+		// bundle_print(bundle_ptr);
 		sendto(bpd_usock, bundle_ptr->payload, 
 			bundle_ptr->payload_block_length, 0, 
 			(struct sockaddr*) &local_uaddr,

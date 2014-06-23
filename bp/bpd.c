@@ -69,7 +69,7 @@ void* bpd_isock_recv_thread(void* arg)
 		if (len != -1){
 			memcpy(bundle.bundle, buffer, len);
 			bundle_decode(&bundle);
-			bundle_print(&bundle);
+			// bundle_print(&bundle);
 			bpd_bundle_list_insert(&bundle);
 		}
 		else {
