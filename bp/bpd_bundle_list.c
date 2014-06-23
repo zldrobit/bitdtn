@@ -177,6 +177,8 @@ void bpd_bundle_list_send_custody_transfer_succeeded_signal(
 	unsigned int time_of_signal_nsec;
 	struct timespec ts;
 	
+	printf("bpd_bundle_list_send_custody_transfer_succeeded_signal()\n");
+	
 	admin_record_set_custody_signal((struct ADMIN_RECORD*)&custody_signal);
 	admin_record_clr_flag((struct ADMIN_RECORD*)&custody_signal);
 	custody_signal_set_succeeded_flag(&custody_signal);
@@ -203,7 +205,13 @@ void bpd_bundle_list_send_custody_transfer_succeeded_signal(
 	uri_assign(&admin_record_bundle.custodian_bp_endpoint_id,
 		"", "");
 
-	bundle_clear_bundle_proc_flags(&admin_record_bundle);
+	// not to explicit call bundle_clear_xxxx
+	// bundle_set_xxxx out of the bundle_encode()
+	// bundle_clear_bundle_proc_flags(&admin_record_bundle);
+	// bundle_set_admin_record(&admin_record_bundle);
+	admin_record_bundle.isadmin = 1;
+	printf("signal after set admin_record:\n");
+	bundle_print(&admin_record_bundle);
 
 	admin_record_bundle.iscustody = 0;
 
@@ -222,6 +230,10 @@ void bpd_bundle_list_send_custody_transfer_succeeded_signal(
 		custody_signal.payload_len);
 	admin_record_bundle.payload_block_length = custody_signal.payload_len;
 
+	printf("signal before bundle encode:\n");
+	bundle_print(&admin_record_bundle);
 	bundle_encode(&admin_record_bundle);
+	printf("signal before insert to bundle list:\n");
+	bundle_print(&admin_record_bundle);
 	bpd_bundle_list_insert(&admin_record_bundle);
 }
