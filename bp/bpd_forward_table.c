@@ -262,6 +262,9 @@ int bpd_forward(struct BUNDLE* bundle_ptr)
 
 	printf("enter bpd_foward()\n");
 	origin_bp_endpoint_id = bundle_ptr->dst_bp_endpoint_id;
+	printf("origin_bp_endpoint_id = %s:%s\n",
+		origin_bp_endpoint_id.scheme,
+		origin_bp_endpoint_id.ssp);
 
 	// if to self forward table
 	if (uri_compare(&origin_bp_endpoint_id,
@@ -273,6 +276,8 @@ int bpd_forward(struct BUNDLE* bundle_ptr)
 			bundle_print(bundle_ptr);
 			bpd_process_admin_record(bundle_ptr);
 		}
+		printf("leave bpd_forward()\n");
+		return 0;
 	}
 	// if dispatch
 	i = bpd_bind_list_find_by_bp_endpoint_id(&origin_bp_endpoint_id);	
@@ -284,6 +289,7 @@ int bpd_forward(struct BUNDLE* bundle_ptr)
 			bundle_ptr->payload_block_length, 0, 
 			(struct sockaddr*) &local_uaddr,
 			sizeof(local_uaddr));
+		printf("leave bpd_forward()\n");
 		return 0;
 	}
 
@@ -300,8 +306,10 @@ int bpd_forward(struct BUNDLE* bundle_ptr)
 			sizeof(remote_iaddr));
 		// for assurance of the udp's correctness
 		usleep(300);
+		printf("leave bpd_forward()\n");
 		return 0;
 	}
+	printf("leave bpd_forward()\n");
 	return -1;	
 }
 
