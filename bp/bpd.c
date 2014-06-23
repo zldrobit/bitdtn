@@ -69,11 +69,8 @@ void* bpd_isock_recv_thread(void* arg)
 			memcpy(bundle.bundle, buffer, len);
 			bundle_decode(&bundle);
 			bundle_print(&bundle);
-			if (bundle_is_admin_record(&bundle)){
-				/* process admin record */
-				bpd_process_admin_record(&bundle);
-			}
-			else { /* normal data payload */
+
+			if (!bundle_is_admin_record(&bundle)){
 				isdrop = 0;
 				payload = bundle.payload;
 				if (payload[0] == '1' && payload[1] == '\0'){
