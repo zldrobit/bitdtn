@@ -210,8 +210,8 @@ void bpd_bundle_list_send_custody_transfer_succeeded_signal(
 	// bundle_clear_bundle_proc_flags(&admin_record_bundle);
 	// bundle_set_admin_record(&admin_record_bundle);
 	admin_record_bundle.isadmin = 1;
-	printf("signal after set admin_record:\n");
-	bundle_print(&admin_record_bundle);
+	// printf("signal after set admin_record:\n");
+	// bundle_print(&admin_record_bundle);
 
 	admin_record_bundle.iscustody = 0;
 
@@ -230,10 +230,10 @@ void bpd_bundle_list_send_custody_transfer_succeeded_signal(
 		custody_signal.payload_len);
 	admin_record_bundle.payload_block_length = custody_signal.payload_len;
 
-	printf("signal before bundle encode:\n");
-	bundle_print(&admin_record_bundle);
+	// printf("signal before bundle encode:\n");
+	// bundle_print(&admin_record_bundle);
 	bundle_encode(&admin_record_bundle);
-	printf("signal before insert to bundle list:\n");
-	bundle_print(&admin_record_bundle);
+	// printf("signal before insert to bundle list:\n");
+	// bundle_print(&admin_record_bundle);
 	bpd_bundle_list_insert(&admin_record_bundle);
 }
