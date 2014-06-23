@@ -56,6 +56,8 @@ void* bpd_isock_recv_thread(void* arg)
 	char buffer[BUFFER_SIZE];
 	struct BUNDLE bundle;
 	int len;
+	int isdrop;
+	char* payload;
 
 	while(1){
 		remote_iaddr_len  = sizeof(remote_iaddr);
@@ -73,6 +75,7 @@ void* bpd_isock_recv_thread(void* arg)
 			}
 			else { /* normal data payload */
 				isdrop = 0;
+				payload = bundle.payload;
 				if (payload[0] == '1' && payload[1] == '\0'){
 					/* drop once */
 					if (!dropped[1]){
