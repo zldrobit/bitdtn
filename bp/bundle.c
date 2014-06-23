@@ -671,7 +671,7 @@ void bundle_encode(struct BUNDLE* bundle_ptr)
 		&bundle_ptr->creation_sequence_number, 4);
 	offset += tmp;
 
-	printf("encode lifetime offset = %d\n", offset);
+	// printf("encode lifetime offset = %d\n", offset);
 	tmp = sdnv_encode(bundle_ptr->bundle + offset,
 		&bundle_ptr->lifetime, 4);
 	offset += tmp;
