@@ -135,7 +135,7 @@ void bpd_bundle_list_insert(struct BUNDLE* bundle_ptr)
 				sizeof(struct BUNDLE));
 
 			uri_copy(&new_bundle_ptr->custodian_bp_endpoint_id, 
-				&bpd_forward_table_self_bp_endpoint_id);
+				&bpd_forward_table_custodian_bp_endpoint_id);
 		
 			key = (char*)malloc(
 				sizeof(BPD_BUNDLE_LIST_HASHKEY_LEN));
@@ -197,7 +197,7 @@ void bpd_bundle_list_send_custody_transfer_succeeded_signal(
 	custody_signal_encode(&custody_signal);
 	
 	uri_copy(&admin_record_bundle.src_bp_endpoint_id,
-		&bpd_forward_table_self_bp_endpoint_id);
+		&bpd_forward_table_custodian_bp_endpoint_id);
 	uri_copy(&admin_record_bundle.dst_bp_endpoint_id,
 		&bundle_ptr->custodian_bp_endpoint_id);
 	uri_assign(&admin_record_bundle.report_to_bp_endpoint_id,

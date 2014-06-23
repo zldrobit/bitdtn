@@ -121,14 +121,8 @@ void bp_sendto(int bp_sockfd, struct URI* dst_bp_endpoint_id_ptr,
 		dst_bp_endpoint_id_ptr);
 	// signal_send.lifetime = lifetime;
 	uri_assign(&src_bp_endpoint_id, "", "");
-	uri_assign(&report_to_bp_endpoint_id, "", "");
-	uri_assign(&custodian_bp_endpoint_id, "", "");
 	uri_copy(&signal_send.src_bp_endpoint_id, 
 		&src_bp_endpoint_id);
-	uri_copy(&signal_send.report_to_bp_endpoint_id, 
-		&report_to_bp_endpoint_id);
-	uri_copy(&signal_send.custodian_bp_endpoint_id, 
-		&custodian_bp_endpoint_id);
 	memcpy(signal_send.payload, buffer, len);
 	signal_send.payload_block_length = len;
 	signal_send.iscustody = iscustody;
