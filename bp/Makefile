@@ -35,7 +35,7 @@ $(OBJ_DIR)/bpd: bpd.c bp.h $(OBJ_DIR)/bpd_bind_list.o \
 		$(OBJ_DIR)/bpd_forward_table.o \
 		$(OBJ_DIR)/uri.o $(OBJ_DIR)/bundle.o \
 		$(OBJ_DIR)/libhash.a \
-		-lpthread -lrt
+		-lpthread -lrt -lssl -lcrypto
 
 $(OBJ_DIR)/bpd_bind_list.o: bpd_bind_list.c \
 	bpd_bind_list.h bp.h
