@@ -164,7 +164,9 @@ void bpd_bundle_list_delete(unsigned int creation_time,
 	*(unsigned int*)key = creation_time;
 	*(unsigned int*)(key+4) = creation_sequence_number;
 	pthread_mutex_lock(&bpd_bundle_list_mutex);
-	dllhashtable_delete(dllhashtable_ptr, key);
+	if (dllhashtable_search(dllhashtable_ptr, key) != NULL){
+		dllhashtable_delete(dllhashtable_ptr, key);
+	}
 	pthread_mutex_unlock(&bpd_bundle_list_mutex);
 	free(key);
 }
