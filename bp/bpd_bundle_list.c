@@ -8,6 +8,7 @@
 #include <pthread.h>
 #include <unistd.h>
 #include <time.h>
+#include <openssl/sha.h>
 
 #include "bp.h"
 #include "bundle.h"
@@ -16,12 +17,15 @@
 #include "dllhashtable.h"
 
 pthread_mutex_t bpd_bundle_list_mutex = PTHREAD_MUTEX_INITIALIZER;
-struct DLLHASHTABLE* dllhashtable_ptr;
+pthread_mutex_t bpd_bundle_list_replica_list_mutex = 
+	PTHREAD_MUTEX_INITIALIZER;
+struct DLLHASHTABLE* bundle_list_ptr;
+struct DLLHASHTABLE* replica_list_ptr;
 
 static void bpd_bundle_list_send_custody_transfer_succeeded_signal(
 	struct BUNDLE* bundle_ptr);
 
-unsigned int hashfunc(struct HASHTABLE* hashtable_ptr, void* key)
+unsigned int bundle_list_hashfunc(struct HASHTABLE* hashtable_ptr, void* key)
 {
 	unsigned int hash;
 	int nbits;
@@ -40,7 +44,7 @@ unsigned int hashfunc(struct HASHTABLE* hashtable_ptr, void* key)
 	return hash;
 }
 
-int compfunc(char* l, char* r)
+int bundle_list_compfunc(char* l, char* r)
 {
 	// int i;
 	// for (i = 0; i < 8; i++){
@@ -59,16 +63,49 @@ int compfunc(char* l, char* r)
 	}
 }
 
+unsigned int replica_list_hashfunc(struct HASHTABLE* hashtable_ptr, void* key)
+{
+	unsigned int hash;
+	int nbits;
+	unsigned int nslots;
 
+	hash = fnv_32a_buf(key, SHA_DIGEST_LENGTH, FNV1_32A_INIT);
+	nslots = hashtable_ptr->nslots;
+	if (hashtable_is2power(nslots)){
+		nbits = hashtable_log2(nslots);
+		hash = (hash >> nbits) & (hash & ((1 << nbits) - 1));
+	}
+	else {
+		/* lazy mod without retry */
+		hash %= nslots;
+	}
+	return hash;
+}
+
+int replica_list_compfunc(char* l, char* r)
+{
+	return strncmp(l, r, SHA_DIGEST_LENGTH);
+}
+
+static void voidfunc()
+{
+	;
+}
 
 void bpd_bundle_list_init()
 {
 	pthread_t scan_thread;
-	dllhashtable_ptr = dllhashtable_create(
+	bundle_list_ptr = dllhashtable_create(
 		BPD_BUNDLE_LIST_MAXSLOTS,
-		(HASHTABLE_COMPFUNC)compfunc,
-		hashfunc,
+		(HASHTABLE_COMPFUNC)bundle_list_compfunc,
+		bundle_list_hashfunc,
 		free);	
+	replica_list_ptr = dllhashtable_create(
+		BPD_BUNDLE_LIST_REPLICA_LIST_MAXSLOTS,
+		(HASHTABLE_COMPFUNC)replica_list_compfunc,
+		replica_list_hashfunc,
+		free);	
+
 	pthread_create(&scan_thread, NULL, bpd_bundle_list_scan_thread, NULL);
 }
 
@@ -76,20 +113,55 @@ void* bpd_bundle_list_scan_thread(void* arg)
 {
 	struct DLLHASHTABLE_HASHTABLEVALUE* hashtablevalue_ptr;
 	struct BUNDLE* bundle_ptr;
-	while(1){
+	while (1){
 		sleep(BPD_BUNDLE_LIST_SCAN_INTERVAL);
 		pthread_mutex_lock(&bpd_bundle_list_mutex);
-		hashtablevalue_ptr = dllhashtable_next(dllhashtable_ptr,
+		hashtablevalue_ptr = dllhashtable_next(bundle_list_ptr,
 			NULL);
 		while (hashtablevalue_ptr != NULL){
 			bundle_ptr = hashtablevalue_ptr->value;
 			bpd_forward(bundle_ptr);
 			hashtablevalue_ptr = 
-				dllhashtable_next(dllhashtable_ptr,
+				dllhashtable_next(bundle_list_ptr,
 					hashtablevalue_ptr);
 		}
 		
 		pthread_mutex_unlock(&bpd_bundle_list_mutex);
+	}
+}
+
+void* bpd_bundle_list_replica_list_scan_thread(void* arg)
+{
+	struct DLLHASHTABLE_HASHTABLEVALUE* hashtablevalue_ptr;
+	struct DLLHASHTABLE_DLLITEM* dllitem_ptr;
+	struct HASHITEM* hashitem_ptr;
+	unsigned int current_time;
+	unsigned int insert_time;
+	char key[SHA_DIGEST_LENGTH];
+
+	while (1){
+		sleep(BPD_BUNDLE_LIST_REPLICA_LIST_SCAN_INTERVAL);
+		pthread_mutex_lock(&bpd_bundle_list_replica_list_mutex);
+		current_time = (unsigned int)time(NULL);
+		hashtablevalue_ptr = dllhashtable_next(replica_list_ptr,
+			NULL);
+		while (hashtablevalue_ptr != NULL){
+			insert_time = 
+				*(unsigned int*)hashtablevalue_ptr->value;
+			dllitem_ptr = hashtablevalue_ptr->dllitem_ptr;
+			hashitem_ptr = dllitem_ptr->hashitem_ptr;
+			memcpy(key, hashitem_ptr->key, SHA_DIGEST_LENGTH);
+
+			hashtablevalue_ptr = 
+				dllhashtable_next(replica_list_ptr,
+					hashtablevalue_ptr);
+			if (current_time - insert_time > 
+				BPD_BUNDLE_LIST_REPLICA_LIFETIME){
+				dllhashtable_delete(replica_list_ptr, key);
+			}
+		}
+		
+		pthread_mutex_unlock(&bpd_bundle_list_replica_list_mutex);
 	}
 }
 
@@ -106,48 +178,72 @@ void bpd_bundle_list_pop(struct BUNDLE* bundle_ptr)
 
 void bpd_bundle_list_insert(struct BUNDLE* bundle_ptr)
 {
-	char* key;
-	struct BUNDLE* new_bundle_ptr;
-	// pthread_mutex_lock(&bpd_bundle_list_mutex);
 	bundle_encode(bundle_ptr);
-	// pthread_mutex_unlock(&bpd_bundle_list_mutex);
 
 	if (!bundle_ptr->iscustody){
 		bpd_bundle_list_pop(bundle_ptr);
 	}
 	else {
-		/* src_bp_endpoint_id is not local */
-		if (!bpd_bind_list_is_bp_endpoint_id_local(
-			&bundle_ptr->src_bp_endpoint_id)){
-			bpd_bundle_list_send_custody_transfer_succeeded_signal(
-				bundle_ptr);
-		}
+		bpd_bundle_list_insert_custody(bundle_ptr);
+	}
+}
 
-		/* dst_bp_endpoint_id is local */
-		if (bpd_bind_list_is_bp_endpoint_id_local(
-			&bundle_ptr->dst_bp_endpoint_id)){
-			bpd_bundle_list_pop(bundle_ptr);
-		}
-		else {
-			new_bundle_ptr = 
-				(struct BUNDLE*)malloc(sizeof(struct BUNDLE));
-			memcpy(new_bundle_ptr, bundle_ptr, 
-				sizeof(struct BUNDLE));
+void bpd_bundle_list_insert_custody(struct BUNDLE* bundle_ptr)
+{
+	char* key;
+	struct BUNDLE* new_bundle_ptr;
+	char* sha1_digest;
+	unsigned int* insert_time;
 
-			uri_copy(&new_bundle_ptr->custodian_bp_endpoint_id, 
-				&bpd_forward_table_custodian_bp_endpoint_id);
-			bundle_encode(new_bundle_ptr);
+	sha1_digest = (char*)malloc(SHA_DIGEST_LENGTH);
+	SHA((const unsigned char*)bundle_ptr->bundle,
+		bundle_ptr->bundle_len,
+		sha1_digest);
 		
-			key = (char*)malloc(
-				sizeof(BPD_BUNDLE_LIST_HASHKEY_LEN));
-			*(unsigned int*)key = bundle_ptr->creation_time;
-			*(unsigned int*)(key+4) = 
-				bundle_ptr->creation_sequence_number;
-			pthread_mutex_lock(&bpd_bundle_list_mutex);
-			dllhashtable_insert(dllhashtable_ptr, key, 
-				new_bundle_ptr);
-			pthread_mutex_unlock(&bpd_bundle_list_mutex);
-		}
+	if (dllhashtable_search(replica_list_ptr, sha1_digest) != NULL){
+		/* replica custody bundle dectected */
+		printf("replica custody bundle dectected!\n");
+		free(sha1_digest);
+		return ;
+	}
+
+	insert_time = (unsigned int*)malloc(sizeof(unsigned int));
+	*insert_time = (unsigned int)time(NULL);
+	pthread_mutex_lock(&bpd_bundle_list_replica_list_mutex);
+	dllhashtable_insert(replica_list_ptr, sha1_digest, insert_time);
+	pthread_mutex_unlock(&bpd_bundle_list_replica_list_mutex);
+
+	/* src_bp_endpoint_id is not local */
+	if (!bpd_bind_list_is_bp_endpoint_id_local(
+		&bundle_ptr->src_bp_endpoint_id)){
+		bpd_bundle_list_send_custody_transfer_succeeded_signal(
+			bundle_ptr);
+	}
+
+	/* dst_bp_endpoint_id is local */
+	if (bpd_bind_list_is_bp_endpoint_id_local(
+		&bundle_ptr->dst_bp_endpoint_id)){
+		bpd_bundle_list_pop(bundle_ptr);
+	}
+	else {
+		new_bundle_ptr = 
+			(struct BUNDLE*)malloc(sizeof(struct BUNDLE));
+		memcpy(new_bundle_ptr, bundle_ptr, 
+			sizeof(struct BUNDLE));
+
+		uri_copy(&new_bundle_ptr->custodian_bp_endpoint_id, 
+			&bpd_forward_table_custodian_bp_endpoint_id);
+		bundle_encode(new_bundle_ptr);
+	
+		key = (char*)malloc(
+			sizeof(BPD_BUNDLE_LIST_HASHKEY_LEN));
+		*(unsigned int*)key = bundle_ptr->creation_time;
+		*(unsigned int*)(key+4) = 
+			bundle_ptr->creation_sequence_number;
+		pthread_mutex_lock(&bpd_bundle_list_mutex);
+		dllhashtable_insert(bundle_list_ptr, key, 
+			new_bundle_ptr);
+		pthread_mutex_unlock(&bpd_bundle_list_mutex);
 	}
 }
 
@@ -164,7 +260,9 @@ void bpd_bundle_list_delete(unsigned int creation_time,
 	*(unsigned int*)key = creation_time;
 	*(unsigned int*)(key+4) = creation_sequence_number;
 	pthread_mutex_lock(&bpd_bundle_list_mutex);
-	dllhashtable_delete(dllhashtable_ptr, key);
+	if (dllhashtable_search(bundle_list_ptr, key) != NULL){
+		dllhashtable_delete(bundle_list_ptr, key);
+	}
 	pthread_mutex_unlock(&bpd_bundle_list_mutex);
 	free(key);
 }

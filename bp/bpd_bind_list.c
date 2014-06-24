@@ -53,9 +53,9 @@ int bpd_bind_list_find_by_bp_endpoint_id(struct URI* bp_endpoint_id_ptr)
 	int i;
 	for (i = 0; i < bpd_bind_list.nr; i++){
 		bind_struct_ptr = &bpd_bind_list.bind_structs[i];
-		if (bind_struct_ptr->valid == 0){
-			continue;
-		}
+		// if (bind_struct_ptr->valid == 0){
+		// 	continue;
+		// }
 		if (uri_compare(bp_endpoint_id_ptr, 
 			&bind_struct_ptr->bp_endpoint_id) == 0){
 			return i;
@@ -94,9 +94,9 @@ int bpd_bind_list_find_by_uaddr(struct sockaddr_un* uaddr_ptr)
 	struct BIND_STRUCT* bind_struct_ptr;
 	for (i = 0; i < bpd_bind_list.nr; i++){
 		bind_struct_ptr = &bpd_bind_list.bind_structs[i];
-		if (bind_struct_ptr->valid == 0){
-			continue;
-		}
+		// if (bind_struct_ptr->valid == 0){
+		// 	continue;
+		// }
 		if (strcmp(uaddr_ptr->sun_path, 
 			bind_struct_ptr->uaddr.sun_path) == 0){
 			return i;
