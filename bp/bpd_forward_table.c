@@ -12,11 +12,14 @@
 #include "bp.h"
 #include "bpd_bind_list.h"
 #include "bpd_forward_table.h"
+#include "bpd_bundle_list.h"
+#include "dllhashtable.h"
 #include "bundle.h"
 #include "uri.h"
 
 struct BPD_FORWARD_TABLE bpd_forward_table;
 struct URI bpd_forward_table_custodian_bp_endpoint_id;
+extern struct DLLHASHTABLE* bundle_list_ptr;
 
 void bpd_forward_table_init()
 {
@@ -279,6 +282,7 @@ int bpd_forward(struct BUNDLE* bundle_ptr)
 			bpd_process_admin_record(bundle_ptr);
 		}
 		// bundle_print(bundle_ptr);
+		printf("bundle_list_ptr->nr = %d\n", bundle_list_ptr->nr);
 		printf("<<<<<<<<<<leave bpd_forward()\n\n");
 		return 0;
 	}
@@ -292,7 +296,8 @@ int bpd_forward(struct BUNDLE* bundle_ptr)
 			bundle_ptr->payload_block_length, 0, 
 			(struct sockaddr*) &local_uaddr,
 			sizeof(local_uaddr));
-		bundle_print(bundle_ptr);
+		// bundle_print(bundle_ptr);
+		printf("bundle_list_ptr->nr = %d\n", bundle_list_ptr->nr);
 		printf("<<<<<<<<<<leave bpd_forward()\n\n");
 		return 0;
 	}
@@ -310,11 +315,13 @@ int bpd_forward(struct BUNDLE* bundle_ptr)
 			sizeof(remote_iaddr));
 		// for assurance of the udp's correctness
 		usleep(300);
-		bundle_print(bundle_ptr);
+		// bundle_print(bundle_ptr);
+		printf("bundle_list_ptr->nr = %d\n", bundle_list_ptr->nr);
 		printf("<<<<<<<<<<leave bpd_forward()\n\n");
 		return 0;
 	}
-	bundle_print(bundle_ptr);
+	// bundle_print(bundle_ptr);
+	printf("bundle_list_ptr->nr = %d\n", bundle_list_ptr->nr);
 	printf("<<<<<<<<<<leave bpd_forward()\n\n");
 	return -1;	
 }
