@@ -87,6 +87,8 @@ struct HASHITEM* hashtable_insert(struct HASHTABLE* hashtable_ptr,
 	item_ptr = (struct HASHITEM*)malloc(sizeof(struct HASHITEM));
 	item_ptr->key = key;
 	item_ptr->value = value;
+	item_ptr->next = NULL;
+
 	// if (*(unsigned int*)item_ptr->key == 7){
 	// 	printf("insert item_ptr->key = %u:%u\n", 
 	// 		*(unsigned int*)item_ptr->key,
