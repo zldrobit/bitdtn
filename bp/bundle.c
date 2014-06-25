@@ -925,6 +925,18 @@ void bundle_print_header(struct BUNDLE* bundle_ptr)
 		bundle_ptr->creation_sequence_number);
 }
 
+void bundle_print_uid(struct BUNDLE* bundle_ptr)
+{
+	int i;
+
+	printf("src bp endpoint id = %s:%s\n",
+		bundle_ptr->src_bp_endpoint_id.scheme,
+		bundle_ptr->src_bp_endpoint_id.ssp);
+	printf("creation_time = %u\n", bundle_ptr->creation_time);
+	printf("creation_sequence_number = %u\n", 
+		bundle_ptr->creation_sequence_number);
+}
+
 void admin_record_clr_type(struct ADMIN_RECORD* admin_record_ptr)
 {
 	admin_record_ptr->type_and_flag &= 0x0F; 

@@ -265,7 +265,8 @@ int bpd_forward(struct BUNDLE* bundle_ptr)
 	// printf("origin_bp_endpoint_id = %s:%s\n",
 	// 	origin_bp_endpoint_id.scheme,
 	// 	origin_bp_endpoint_id.ssp);
-	bundle_print_header(bundle_ptr);
+	// bundle_print_header(bundle_ptr);
+	bundle_print_uid(bundle_ptr);
 
 	// if to custodian forward table
 	if (uri_compare(&origin_bp_endpoint_id,
@@ -273,11 +274,11 @@ int bpd_forward(struct BUNDLE* bundle_ptr)
 		printf("custodian forward table branch\n");	
 		//if (bundle_is_admin_record(bundle_ptr)){
 		if (bundle_ptr->isadmin){
-			printf("bundle is admin record branch!");
+			printf("bundle is admin record branch!\n");
 			// bundle_print(bundle_ptr);
 			bpd_process_admin_record(bundle_ptr);
 		}
-		bundle_print(bundle_ptr);
+		// bundle_print(bundle_ptr);
 		printf("<<<<<<<<<<leave bpd_forward()\n\n");
 		return 0;
 	}
