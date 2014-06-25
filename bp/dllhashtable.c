@@ -79,6 +79,27 @@ void dllhashtable_insert(struct DLLHASHTABLE* dllhashtable_ptr,
 	hashtablevalue_ptr->dllitem_ptr = dllitem_ptr;
 }
 
+struct DLLHASHTABLE_HASHTABLEVALUE* dllhashtable_search(
+	struct DLLHASHTABLE* dllhashtable_ptr,
+	void* key)
+{
+	struct DLL* dll_ptr;
+	struct HASHTABLE* hashtable_ptr;
+	struct HASHITEM* hashitem_ptr;
+	struct DLLHASHTABLE_HASHTABLEVALUE* hashtablevalue_ptr;
+	struct DLLHASHTABLE_DLLITEM* dllitem_ptr;
+
+	dll_ptr = dllhashtable_ptr->dll_ptr;
+	hashtable_ptr = dllhashtable_ptr->hashtable_ptr;
+
+	hashitem_ptr = hashtable_search(hashtable_ptr, key);
+	if (hashitem_ptr == NULL){
+		return NULL;
+	}
+	hashtablevalue_ptr = hashitem_ptr->value;
+	return hashtablevalue_ptr;
+}
+
 void dllhashtable_delete(struct DLLHASHTABLE* dllhashtable_ptr,
 	void* key)
 {

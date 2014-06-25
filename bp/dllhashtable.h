@@ -35,6 +35,10 @@ struct DLLHASHTABLE* dllhashtable_create(
 void dllhashtable_insert(struct DLLHASHTABLE* dllhashtable_ptr, 
 	void*key, void* value);
 
+struct DLLHASHTABLE_HASHTABLEVALUE* dllhashtable_search(
+	struct DLLHASHTABLE* dllhashtable_ptr,
+	void* key);
+
 void dllhashtable_delete(struct DLLHASHTABLE* dllhashtable_ptr,
 	void* key);
 

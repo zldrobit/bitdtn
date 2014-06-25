@@ -158,5 +158,7 @@ void bp_sendto(int bp_sockfd, struct URI* dst_bp_endpoint_id_ptr,
         char* buffer, unsigned int len, int iscustody);
 ssize_t bp_recv(int bp_sockfd, char* buffer, int len);
 
+void bpd_process_admin_record(struct BUNDLE* bundle_ptr);
+
 #endif
 

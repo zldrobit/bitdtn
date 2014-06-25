@@ -16,7 +16,7 @@
 #include "uri.h"
 
 struct BPD_FORWARD_TABLE bpd_forward_table;
-struct URI bpd_forward_table_self_bp_endpoint_id;
+struct URI bpd_forward_table_custodian_bp_endpoint_id;
 
 void bpd_forward_table_init()
 {
@@ -36,7 +36,7 @@ void bpd_forward_table_parse_conf()
 	struct sockaddr_in origin_iaddr;
 	struct sockaddr_in next_iaddr;
 	int isorigin;
-	int is_self_bp_endpoint_id_parsed;
+	int is_custodian_bp_endpoint_id_parsed;
 
 	getcwd(buf, 256);
 	printf("cwd = %s\n", buf);
@@ -46,7 +46,7 @@ void bpd_forward_table_parse_conf()
 		exit(EXIT_FAILURE);
 	}
 
-	is_self_bp_endpoint_id_parsed = 0;
+	is_custodian_bp_endpoint_id_parsed = 0;
 	isorigin = 1;
 
 	while (1){
@@ -55,14 +55,14 @@ void bpd_forward_table_parse_conf()
 			break;
 		}
 		
-		printf("buf = %s\n", buf);
+		// printf("buf = %s\n", buf);
 		// printf("buf len = %d\n", strlen(buf));
 		
 	
 		buf[strlen(buf) - 1] = '\0';
 		// printf("after buf len = %d\n", strlen(buf));
 
-		if (!is_self_bp_endpoint_id_parsed){
+		if (!is_custodian_bp_endpoint_id_parsed){
 			p = strtok(buf, ": 	");
 			if (p == NULL){
 				goto END_OF_WHILE;
@@ -73,9 +73,12 @@ void bpd_forward_table_parse_conf()
 			}
 			p = strtok(NULL, ": 	");
 			strcpy(tok2, p);
-			uri_assign(&bpd_forward_table_self_bp_endpoint_id,
+			uri_assign(&bpd_forward_table_custodian_bp_endpoint_id,
 				tok1, tok2);	
-			is_self_bp_endpoint_id_parsed = 1;
+			bpd_forward_table_insert(
+				&bpd_forward_table_custodian_bp_endpoint_id,
+				NULL, NULL, NULL);
+			is_custodian_bp_endpoint_id_parsed = 1;
 			goto END_OF_WHILE;
 		}
 		p = strtok(buf, " 	");
@@ -86,9 +89,9 @@ void bpd_forward_table_parse_conf()
 		if (tok1[0] == '#'){
 			goto END_OF_WHILE;	
 		}
-		printf("tok1 = %s\n", tok1);
+		// printf("tok1 = %s\n", tok1);
 		strcpy(tok2, strtok(NULL, " 	"));
-		printf("tok2 = %s\n", tok2);
+		// printf("tok2 = %s\n", tok2);
 
 		/* parse original uri and iaddr */
 		// printf("tok1 = %s\n", tok1); 
@@ -142,11 +145,17 @@ void bpd_forward_table_print()
 	int i;
 	struct FORWARD_STRUCT tmp;
 
-	printf("forward table self bp endpoint id = %s:%s\n",
-		bpd_forward_table_self_bp_endpoint_id.scheme,
-		bpd_forward_table_self_bp_endpoint_id.ssp);
+	printf("forward table custodian bp endpoint id = %s:%s\n",
+		bpd_forward_table_custodian_bp_endpoint_id.scheme,
+		bpd_forward_table_custodian_bp_endpoint_id.ssp);
 	printf("forward table has %d items(s):\n\n", bpd_forward_table.nr); 
-	for (i = 0; i < bpd_forward_table.nr; i++){
+	printf("the 0th(custodian) is:\n");
+	tmp = bpd_forward_table.forward_structs[0];
+	printf("bp custodian forward bp endpoint = %s:%s\n\n", 
+		tmp.origin_bp_endpoint_id.scheme,
+		tmp.origin_bp_endpoint_id.ssp);
+
+	for (i = 1; i < bpd_forward_table.nr; i++){
 		printf("the %dth is:\n", i);
 		tmp = bpd_forward_table.forward_structs[i];
 		printf("valid = %d\n", tmp.valid);
@@ -176,14 +185,20 @@ void bpd_forward_table_insert(struct URI* origin_bp_endpoint_id_ptr,
 	// 	origin_bp_endpoint_id);
 	uri_copy(&forward_struct_ptr->origin_bp_endpoint_id, 
 		origin_bp_endpoint_id_ptr);
-	memcpy(&forward_struct_ptr->origin_iaddr, origin_iaddr_ptr,
-		sizeof(struct sockaddr_in));
+	if (origin_iaddr_ptr != NULL){
+		memcpy(&forward_struct_ptr->origin_iaddr, origin_iaddr_ptr,
+			sizeof(struct sockaddr_in));
+	}
 	// strcpy(forward_struct_ptr->next_bp_endpoint_id, 
 	// 	next_bp_endpoint_id);
-	uri_copy(&forward_struct_ptr->next_bp_endpoint_id, 
-		next_bp_endpoint_id_ptr);
-	memcpy(&forward_struct_ptr->next_iaddr, next_iaddr_ptr,
-		sizeof(struct sockaddr_in));
+	if (next_bp_endpoint_id_ptr != NULL){
+		uri_copy(&forward_struct_ptr->next_bp_endpoint_id, 
+			next_bp_endpoint_id_ptr);
+	}
+	if (next_iaddr_ptr != NULL){
+		memcpy(&forward_struct_ptr->next_iaddr, next_iaddr_ptr,
+			sizeof(struct sockaddr_in));
+	}
 	forward_struct_ptr->valid = 1;
 	bpd_forward_table.nr++;
 }
@@ -245,18 +260,39 @@ int bpd_forward(struct BUNDLE* bundle_ptr)
 	struct sockaddr_in remote_iaddr;
 	struct sockaddr_un local_uaddr;
 
-	printf("enter bpd_foward\n");
+	printf("\n>>>>>>>>>>enter bpd_foward()\n");
 	origin_bp_endpoint_id = bundle_ptr->dst_bp_endpoint_id;
+	// printf("origin_bp_endpoint_id = %s:%s\n",
+	// 	origin_bp_endpoint_id.scheme,
+	// 	origin_bp_endpoint_id.ssp);
+	bundle_print_header(bundle_ptr);
 
+	// if to custodian forward table
+	if (uri_compare(&origin_bp_endpoint_id,
+		&bpd_forward_table_custodian_bp_endpoint_id) == 0){
+		printf("custodian forward table branch\n");	
+		//if (bundle_is_admin_record(bundle_ptr)){
+		if (bundle_ptr->isadmin){
+			printf("bundle is admin record branch!");
+			// bundle_print(bundle_ptr);
+			bpd_process_admin_record(bundle_ptr);
+		}
+		bundle_print(bundle_ptr);
+		printf("<<<<<<<<<<leave bpd_forward()\n\n");
+		return 0;
+	}
 	// if dispatch
 	i = bpd_bind_list_find_by_bp_endpoint_id(&origin_bp_endpoint_id);	
 	if (i != -1){
+		printf("dispatch branch\n");
 		local_uaddr = bpd_bind_list.bind_structs[i].uaddr;
-		bundle_print(bundle_ptr);
+		// bundle_print(bundle_ptr);
 		sendto(bpd_usock, bundle_ptr->payload, 
 			bundle_ptr->payload_block_length, 0, 
 			(struct sockaddr*) &local_uaddr,
 			sizeof(local_uaddr));
+		bundle_print(bundle_ptr);
+		printf("<<<<<<<<<<leave bpd_forward()\n\n");
 		return 0;
 	}
 
@@ -264,6 +300,7 @@ int bpd_forward(struct BUNDLE* bundle_ptr)
 	i = bpd_forward_table_find_by_origin_bp_endpoint_id(
 		&origin_bp_endpoint_id);
 	if (i != -1){
+		printf("forward branch\n");
 		remote_iaddr = 
 			bpd_forward_table.forward_structs[i].next_iaddr;
 		sendto(bpd_isock, bundle_ptr->bundle, 
@@ -272,8 +309,12 @@ int bpd_forward(struct BUNDLE* bundle_ptr)
 			sizeof(remote_iaddr));
 		// for assurance of the udp's correctness
 		usleep(300);
+		bundle_print(bundle_ptr);
+		printf("<<<<<<<<<<leave bpd_forward()\n\n");
 		return 0;
 	}
+	bundle_print(bundle_ptr);
+	printf("<<<<<<<<<<leave bpd_forward()\n\n");
 	return -1;	
 }
 

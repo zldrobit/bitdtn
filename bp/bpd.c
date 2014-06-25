@@ -13,6 +13,7 @@
 #include "bundle.h"
 #include "bpd_bind_list.h"
 #include "bpd_bundle_list.h"
+#include "bpd_forward_table.h"
 
 #define BUFFER_SIZE		5000
 #define BUNDLE_LIST_MAXSIZE 	200
@@ -35,12 +36,16 @@ void bpd_process_admin_record(struct BUNDLE* bundle_ptr)
 	unsigned int creation_sequence_number;
 	struct CUSTODY_SIGNAL custody_signal;
 
-	creation_time = bundle_ptr->creation_time;
-	creation_sequence_number = bundle_ptr->creation_sequence_number;
-	
+	printf("bpd_process_admin_record()\n");
+
 	memcpy(custody_signal.payload, bundle_ptr->payload, 
 		bundle_ptr->payload_block_length);
 	custody_signal_decode(&custody_signal);
+	creation_time = custody_signal.creation_time;
+	creation_sequence_number = custody_signal.creation_sequence_number;
+	
+	printf("creation_time = %u\n", creation_time);
+	printf("creation_sequence_number = %u\n", creation_sequence_number);
 	if (custody_signal_is_succeeded_flag(&custody_signal)){
 		bpd_bundle_list_delete(creation_time, 
 			creation_sequence_number);
@@ -64,14 +69,8 @@ void* bpd_isock_recv_thread(void* arg)
 		if (len != -1){
 			memcpy(bundle.bundle, buffer, len);
 			bundle_decode(&bundle);
-			bundle_print(&bundle);
-			if (bundle_is_admin_record(&bundle)){
-				/* process admin record */
-				bpd_process_admin_record(&bundle);
-			}
-			else { /* normal data payload */
-				bpd_bundle_list_insert(&bundle);
-			}
+			// bundle_print(&bundle);
+			bpd_bundle_list_insert(&bundle);
 		}
 		else {
 			perror("bpd_isock_recv_thread recvfrom error");
@@ -108,6 +107,8 @@ void bpd_process_signal_send(struct BPD_SEND* signal_send_ptr,
 	unsigned int time_2000;
 	struct tm tm_dtn_epoch;
 	struct BUNDLE* bundle_ptr;
+	struct URI report_to_bp_endpoint_id;
+	struct URI custodian_bp_endpoint_id;
 	
 	// strcpy(src_bp_endpoint_id,
 	// 	bpd_bind_list_map_uaddr_to_bp_endpoint_id(remote_uaddr_ptr));
@@ -124,8 +125,22 @@ void bpd_process_signal_send(struct BPD_SEND* signal_send_ptr,
 	// 	src_bp_endpoint_id);
 	uri_copy(&signal_send_ptr->src_bp_endpoint_id,
 		src_bp_endpoint_id_ptr);
-	bundle_clear_bundle_proc_flags(
-		(struct BUNDLE*) &signal_send_ptr->version);
+
+	uri_assign(&report_to_bp_endpoint_id, "", "");
+	uri_copy(&signal_send_ptr->report_to_bp_endpoint_id,
+		&report_to_bp_endpoint_id);
+
+	uri_assign(&custodian_bp_endpoint_id, "", "");
+	if (signal_send_ptr->iscustody){
+		uri_copy(&custodian_bp_endpoint_id, 
+			&bpd_forward_table_custodian_bp_endpoint_id);
+	}
+	uri_copy(&signal_send_ptr->custodian_bp_endpoint_id,
+		&custodian_bp_endpoint_id);
+
+	
+	// bundle_clear_bundle_proc_flags(
+	// 	(struct BUNDLE*) &signal_send_ptr->version);
 
 	// tm_dtn_epoch.tm_sec = 0;
 	// tm_dtn_epoch.tm_min = 0;
@@ -147,10 +162,6 @@ void bpd_process_signal_send(struct BPD_SEND* signal_send_ptr,
 		bpd_creation_sequence_number_counter++);
 	pthread_mutex_unlock(&bpd_creation_sequence_number_mutex);
 
-	if (bundle_ptr->iscustody){
-		uri_copy(&bundle_ptr->custodian_bp_endpoint_id,
-			src_bp_endpoint_id_ptr);
-	}
 	bpd_bundle_list_insert(
 		(struct BUNDLE*) &signal_send_ptr->version);
 
