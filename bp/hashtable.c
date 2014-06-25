@@ -14,6 +14,7 @@ struct HASHTABLE* hashtable_create(unsigned int nslots,
 			sizeof(HASHTABLE_COMPFUNC) +
 			sizeof(HASHTABLE_HASHFUNC) +
 			nslots * sizeof(struct HASHITEM));
+	hashtable_ptr->nr = 0;
 	hashtable_ptr->nslots = nslots;
 	hashtable_ptr->compfunc = compfunc;
 	hashtable_ptr->hashfunc = hashfunc;
@@ -83,6 +84,7 @@ struct HASHITEM* hashtable_insert(struct HASHTABLE* hashtable_ptr,
 	struct HASHITEM* item_ptr;
 	HASHTABLE_HASHFUNC hashfunc;
 	
+	hashtable_ptr->nr++;
 	hashfunc = hashtable_ptr->hashfunc;
 	item_ptr = (struct HASHITEM*)malloc(sizeof(struct HASHITEM));
 	item_ptr->key = key;
@@ -122,6 +124,7 @@ void hashtable_delete(struct HASHTABLE* hashtable_ptr, void* key)
 	HASHTABLE_HASHFUNC hashfunc;
 	HASHTABLE_DELVALUEFUNC delvaluefunc;
 
+	hashtable_ptr->nr--;
 	// printf("hashtable_delete\n");
 	hashfunc = hashtable_ptr->hashfunc;
 	hash = hashfunc(hashtable_ptr, key);

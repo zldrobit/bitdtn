@@ -20,6 +20,7 @@ typedef unsigned int (*HASHTABLE_HASHFUNC)(struct HASHTABLE* hashtable_ptr,
 typedef void (*HASHTABLE_DELVALUEFUNC)(void* value);
 
 struct HASHTABLE{
+	unsigned int nr;
 	unsigned int nslots;
 	HASHTABLE_COMPFUNC compfunc;
 	HASHTABLE_HASHFUNC hashfunc;

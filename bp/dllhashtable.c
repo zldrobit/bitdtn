@@ -31,6 +31,7 @@ struct DLLHASHTABLE* dllhashtable_create(
 
 	dllhashtable_ptr = (struct DLLHASHTABLE*)malloc(
 		sizeof(struct DLLHASHTABLE));
+	dllhashtable_ptr->nr = 0;
 	dll_ptr = dll_create(voidfunc);
 	hashtable_ptr = hashtable_create(nslots,
 		compfunc,
@@ -57,6 +58,7 @@ void dllhashtable_insert(struct DLLHASHTABLE* dllhashtable_ptr,
 	struct DLLHASHTABLE_HASHTABLEVALUE* hashtablevalue_ptr;
 	struct HASHITEM* hashitem_ptr;
 
+	dllhashtable_ptr->nr++;
 	dll_ptr = dllhashtable_ptr->dll_ptr;
 	hashtable_ptr = dllhashtable_ptr->hashtable_ptr;
 
@@ -109,6 +111,7 @@ void dllhashtable_delete(struct DLLHASHTABLE* dllhashtable_ptr,
 	struct DLLHASHTABLE_HASHTABLEVALUE* hashtablevalue_ptr;
 	struct DLLHASHTABLE_DLLITEM* dllitem_ptr;
 
+	dllhashtable_ptr->nr--;
 	dll_ptr = dllhashtable_ptr->dll_ptr;
 	hashtable_ptr = dllhashtable_ptr->hashtable_ptr;
 
