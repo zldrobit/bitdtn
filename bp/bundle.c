@@ -925,6 +925,18 @@ void bundle_print_header(struct BUNDLE* bundle_ptr)
 		bundle_ptr->creation_sequence_number);
 }
 
+void bundle_print_uid(struct BUNDLE* bundle_ptr)
+{
+	int i;
+
+	printf("src bp endpoint id = %s:%s\n",
+		bundle_ptr->src_bp_endpoint_id.scheme,
+		bundle_ptr->src_bp_endpoint_id.ssp);
+	printf("creation_time = %u\n", bundle_ptr->creation_time);
+	printf("creation_sequence_number = %u\n", 
+		bundle_ptr->creation_sequence_number);
+}
+
 void admin_record_clr_type(struct ADMIN_RECORD* admin_record_ptr)
 {
 	admin_record_ptr->type_and_flag &= 0x0F; 
@@ -1041,6 +1053,7 @@ int custody_signal_is_no_addition(struct CUSTODY_SIGNAL* custody_signal_ptr)
 
 void custody_signal_set_no_addition(struct CUSTODY_SIGNAL* custody_signal_ptr)
 {
+	custody_signal_ptr->status &= 0x80;
 	custody_signal_ptr->status |= CUSTODY_SIGNAL_REASON_CODE_NO_ADDITION;
 }
 
@@ -1069,6 +1082,7 @@ int custody_signal_is_reserved(struct CUSTODY_SIGNAL* custody_signal_ptr)
 
 void custody_signal_set_reserved(struct CUSTODY_SIGNAL* custody_signal_ptr)
 {
+	custody_signal_ptr->status &= 0x80;
 	custody_signal_ptr->status |= CUSTODY_SIGNAL_REASON_CODE_RESERVED;
 }
 
@@ -1080,6 +1094,7 @@ int custody_signal_is_redundant(struct CUSTODY_SIGNAL* custody_signal_ptr)
 
 void custody_signal_set_redundant(struct CUSTODY_SIGNAL* custody_signal_ptr)
 {
+	custody_signal_ptr->status &= 0x80;
 	custody_signal_ptr->status |= CUSTODY_SIGNAL_REASON_CODE_REDUNDANT;
 }
 
@@ -1091,6 +1106,7 @@ int custody_signal_is_depleted(struct CUSTODY_SIGNAL* custody_signal_ptr)
 
 void custody_signal_set_depleted(struct CUSTODY_SIGNAL* custody_signal_ptr)
 {
+	custody_signal_ptr->status &= 0x80;
 	custody_signal_ptr->status |= CUSTODY_SIGNAL_REASON_CODE_DEPLETED;
 }
 
@@ -1104,6 +1120,7 @@ int custody_signal_is_destination_unintelligible(
 void custody_signal_set_destination_unintelligible(
 	struct CUSTODY_SIGNAL* custody_signal_ptr)
 {
+	custody_signal_ptr->status &= 0x80;
 	custody_signal_ptr->status |= 
 		CUSTODY_SIGNAL_REASON_CODE_DESTINATION_UNINTELLIGIBLE;
 }
@@ -1116,6 +1133,7 @@ int custody_signal_is_no_route(struct CUSTODY_SIGNAL* custody_signal_ptr)
 
 void custody_signal_set_no_route(struct CUSTODY_SIGNAL* custody_signal_ptr)
 {
+	custody_signal_ptr->status &= 0x80;
 	custody_signal_ptr->status |= CUSTODY_SIGNAL_REASON_CODE_NO_ROUTE;
 }
 
@@ -1127,6 +1145,7 @@ int custody_signal_is_no_contact(struct CUSTODY_SIGNAL* custody_signal_ptr)
 
 void custody_signal_set_no_contact(struct CUSTODY_SIGNAL* custody_signal_ptr)
 {
+	custody_signal_ptr->status &= 0x80;
 	custody_signal_ptr->status |= CUSTODY_SIGNAL_REASON_CODE_NO_CONTACT;
 }
 
@@ -1140,6 +1159,7 @@ int custody_signal_is_block_unintelligible(
 void custody_signal_set_block_unintelligible(
 	struct CUSTODY_SIGNAL* custody_signal_ptr)
 {
+	custody_signal_ptr->status &= 0x80;
 	custody_signal_ptr->status |= 
 		CUSTODY_SIGNAL_REASON_CODE_BLOCK_UNINTELLIGIBLE;
 }
