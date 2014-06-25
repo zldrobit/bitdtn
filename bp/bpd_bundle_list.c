@@ -116,6 +116,7 @@ void* bpd_bundle_list_scan_thread(void* arg)
 	while (1){
 		sleep(BPD_BUNDLE_LIST_SCAN_INTERVAL);
 		pthread_mutex_lock(&bpd_bundle_list_mutex);
+		printf("the bundle list nr = %d\n", bundle_list_ptr->nr);
 		hashtablevalue_ptr = dllhashtable_next(bundle_list_ptr,
 			NULL);
 		while (hashtablevalue_ptr != NULL){
@@ -142,6 +143,7 @@ void* bpd_bundle_list_replica_list_scan_thread(void* arg)
 	while (1){
 		sleep(BPD_BUNDLE_LIST_REPLICA_LIST_SCAN_INTERVAL);
 		pthread_mutex_lock(&bpd_bundle_list_replica_list_mutex);
+		printf("the replica list nr = %d\n", replica_list_ptr->nr);
 		current_time = (unsigned int)time(NULL);
 		hashtablevalue_ptr = dllhashtable_next(replica_list_ptr,
 			NULL);
