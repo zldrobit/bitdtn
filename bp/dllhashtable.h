@@ -7,6 +7,7 @@
 typedef void (*DLLHASHTABLE_INNER_DELVALUEFUNC)(void* value);
 
 struct DLLHASHTABLE{
+	unsigned int nr;
 	struct DLL* dll_ptr;
 	struct HASHTABLE* hashtable_ptr;
 	DLLHASHTABLE_INNER_DELVALUEFUNC hashtable_delvaluefunc;
