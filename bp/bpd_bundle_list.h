@@ -23,7 +23,9 @@ void bpd_bundle_list_init();
 void* bpd_bundle_list_scan_thread(void* arg);
 void bpd_bundle_list_pop(struct BUNDLE* bundle_ptr);
 void bpd_bundle_list_insert(struct BUNDLE* bundle_ptr);
+void bpd_bundle_list_process_custody(struct BUNDLE* bundle_ptr);
 void bpd_bundle_list_insert_custody(struct BUNDLE* bundle_ptr);
+int bpd_bundle_list_replica_check(struct BUNDLE* bundle_ptr);
 void bpd_bundle_list_delete(unsigned int creation_time, 
 	unsigned int creation_sequence_number);
 

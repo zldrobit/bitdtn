@@ -184,14 +184,36 @@ void bpd_bundle_list_insert(struct BUNDLE* bundle_ptr)
 		bpd_bundle_list_pop(bundle_ptr);
 	}
 	else {
+		bpd_bundle_list_process_custody(bundle_ptr);
+	}
+}
+
+void bpd_bundle_list_process_custody(struct BUNDLE* bundle_ptr)
+{
+	struct BUNDLE* new_bundle_ptr;
+
+	/* src_bp_endpoint_id is not local */
+	/* send a custody succeeded signal to prev node */
+	if (!bpd_bind_list_is_bp_endpoint_id_local(
+		&bundle_ptr->src_bp_endpoint_id)){
+		bpd_bundle_list_send_custody_transfer_succeeded_signal(
+			bundle_ptr);
+	}
+
+	/* dst_bp_endpoint_id is local */
+	/* not need to store the bundle */
+	if (bpd_bind_list_is_bp_endpoint_id_local(
+		&bundle_ptr->dst_bp_endpoint_id)){
+		bpd_bundle_list_pop(bundle_ptr);
+	}
+	else if (!bpd_bundle_list_replica_check(bundle_ptr)){
+		/* and not replicated */
 		bpd_bundle_list_insert_custody(bundle_ptr);
 	}
 }
 
-void bpd_bundle_list_insert_custody(struct BUNDLE* bundle_ptr)
+int bpd_bundle_list_replica_check(struct BUNDLE* bundle_ptr)
 {
-	char* key;
-	struct BUNDLE* new_bundle_ptr;
 	char* sha1_digest;
 	unsigned int* insert_time;
 
@@ -203,48 +225,46 @@ void bpd_bundle_list_insert_custody(struct BUNDLE* bundle_ptr)
 	if (dllhashtable_search(replica_list_ptr, sha1_digest) != NULL){
 		/* replica custody bundle dectected */
 		printf("replica custody bundle dectected!\n");
+		printf("creation time = %d, creation seq nr = %d\n",
+			bundle_ptr->creation_time,
+			bundle_ptr->creation_sequence_number);
 		free(sha1_digest);
-		return ;
+		return 1;
 	}
 
+	/* insert replica digest */
 	insert_time = (unsigned int*)malloc(sizeof(unsigned int));
 	*insert_time = (unsigned int)time(NULL);
 	pthread_mutex_lock(&bpd_bundle_list_replica_list_mutex);
 	dllhashtable_insert(replica_list_ptr, sha1_digest, insert_time);
 	pthread_mutex_unlock(&bpd_bundle_list_replica_list_mutex);
 
-	/* src_bp_endpoint_id is not local */
-	if (!bpd_bind_list_is_bp_endpoint_id_local(
-		&bundle_ptr->src_bp_endpoint_id)){
-		bpd_bundle_list_send_custody_transfer_succeeded_signal(
-			bundle_ptr);
-	}
+	return 0;
+}
 
-	/* dst_bp_endpoint_id is local */
-	if (bpd_bind_list_is_bp_endpoint_id_local(
-		&bundle_ptr->dst_bp_endpoint_id)){
-		bpd_bundle_list_pop(bundle_ptr);
-	}
-	else {
-		new_bundle_ptr = 
-			(struct BUNDLE*)malloc(sizeof(struct BUNDLE));
-		memcpy(new_bundle_ptr, bundle_ptr, 
-			sizeof(struct BUNDLE));
+void bpd_bundle_list_insert_custody(struct BUNDLE* bundle_ptr)
+{
+	struct BUNDLE* new_bundle_ptr;
+	char* key;
 
-		uri_copy(&new_bundle_ptr->custodian_bp_endpoint_id, 
-			&bpd_forward_table_custodian_bp_endpoint_id);
-		bundle_encode(new_bundle_ptr);
-	
-		key = (char*)malloc(
-			sizeof(BPD_BUNDLE_LIST_HASHKEY_LEN));
-		*(unsigned int*)key = bundle_ptr->creation_time;
-		*(unsigned int*)(key+4) = 
-			bundle_ptr->creation_sequence_number;
-		pthread_mutex_lock(&bpd_bundle_list_mutex);
-		dllhashtable_insert(bundle_list_ptr, key, 
-			new_bundle_ptr);
-		pthread_mutex_unlock(&bpd_bundle_list_mutex);
-	}
+	new_bundle_ptr = 
+		(struct BUNDLE*)malloc(sizeof(struct BUNDLE));
+	memcpy(new_bundle_ptr, bundle_ptr, 
+		sizeof(struct BUNDLE));
+
+	uri_copy(&new_bundle_ptr->custodian_bp_endpoint_id, 
+		&bpd_forward_table_custodian_bp_endpoint_id);
+	bundle_encode(new_bundle_ptr);
+
+	key = (char*)malloc(
+		sizeof(BPD_BUNDLE_LIST_HASHKEY_LEN));
+	*(unsigned int*)key = bundle_ptr->creation_time;
+	*(unsigned int*)(key+4) = 
+		bundle_ptr->creation_sequence_number;
+	pthread_mutex_lock(&bpd_bundle_list_mutex);
+	dllhashtable_insert(bundle_list_ptr, key, 
+		new_bundle_ptr);
+	pthread_mutex_unlock(&bpd_bundle_list_mutex);
 }
 
 void bpd_bundle_list_delete(unsigned int creation_time, 
