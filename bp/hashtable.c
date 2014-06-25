@@ -188,7 +188,7 @@ struct HASHITEM* hashtable_search(struct HASHTABLE* hashtable_ptr, void* key)
 
 	// printf("before while\n");
 
-	while (compfunc(item_ptr->key, key) != 0){
+	while (item_ptr != NULL && compfunc(item_ptr->key, key) != 0){
 		prev_ptr = item_ptr;
 		item_ptr = item_ptr->next;
 		// printf("item_ptr = 0x%X\n", (unsigned int)item_ptr);
