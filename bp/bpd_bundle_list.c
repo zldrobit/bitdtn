@@ -303,6 +303,8 @@ void bpd_bundle_list_send_custody_transfer_succeeded_signal(
 	admin_record_set_custody_signal((struct ADMIN_RECORD*)&custody_signal);
 	admin_record_clr_flag((struct ADMIN_RECORD*)&custody_signal);
 	custody_signal_set_succeeded_flag(&custody_signal);
+
+	/* custody signal specific status field */
 	custody_signal_set_no_addition(&custody_signal);
 	
 	clock_gettime(CLOCK_REALTIME, &ts);
