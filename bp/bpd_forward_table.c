@@ -269,7 +269,11 @@ int bpd_forward(struct BUNDLE* bundle_ptr)
 	// 	origin_bp_endpoint_id.scheme,
 	// 	origin_bp_endpoint_id.ssp);
 	// bundle_print_header(bundle_ptr);
-	bundle_print_uid(bundle_ptr);
+	// bundle_print_uid(bundle_ptr);
+	bundle_print(bundle_ptr);
+	bundle_decode(bundle_ptr);
+	printf("\n\n\nafter decode:\n\n\n\n");
+	bundle_print(bundle_ptr);
 
 	// if to custodian forward table
 	if (uri_compare(&origin_bp_endpoint_id,
