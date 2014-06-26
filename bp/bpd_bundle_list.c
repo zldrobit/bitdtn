@@ -193,6 +193,7 @@ void bpd_bundle_list_insert(struct BUNDLE* bundle_ptr)
 void bpd_bundle_list_process_custody(struct BUNDLE* bundle_ptr)
 {
 	struct BUNDLE* new_bundle_ptr;
+	int isreplica = 0;
 
 	/* src_bp_endpoint_id is not local */
 	/* send a custody succeeded signal to prev node */
@@ -202,15 +203,18 @@ void bpd_bundle_list_process_custody(struct BUNDLE* bundle_ptr)
 			bundle_ptr);
 	}
 
+	/* check for replica first */
 	/* dst_bp_endpoint_id is local */
 	/* not need to store the bundle */
-	if (bpd_bind_list_is_bp_endpoint_id_local(
-		&bundle_ptr->dst_bp_endpoint_id)){
-		bpd_bundle_list_pop(bundle_ptr);
-	}
-	else if (!bpd_bundle_list_replica_check(bundle_ptr)){
-		/* and not replicated */
-		bpd_bundle_list_insert_custody(bundle_ptr);
+	isreplica = bpd_bundle_list_replica_check(bundle_ptr);
+	if (!replica){
+		if (bpd_bind_list_is_bp_endpoint_id_local(
+			&bundle_ptr->dst_bp_endpoint_id)){
+			bpd_bundle_list_pop(bundle_ptr);
+		}
+		else {
+			bpd_bundle_list_insert_custody(bundle_ptr);
+		}
 	}
 }
 
