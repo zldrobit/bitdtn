@@ -1070,22 +1070,27 @@ void custody_signal_decode(struct CUSTODY_SIGNAL* custody_signal_ptr)
 	custody_signal_ptr->status = payload[offset];
 	offset += 1;
 
+	custody_signal_ptr->time_of_signal_sec = 0;
 	sdnv_decode(&custody_signal_ptr->time_of_signal_sec,
 		payload + offset, &tmp);
 	offset += tmp;
 
+	custody_signal_ptr->time_of_signal_nsec = 0;
 	sdnv_decode(&custody_signal_ptr->time_of_signal_nsec,
 		payload + offset, &tmp);
 	offset += tmp;
 
+	custody_signal_ptr->creation_time = 0;
 	sdnv_decode(&custody_signal_ptr->creation_time,
 		payload + offset, &tmp);
 	offset += tmp;
 
+	custody_signal_ptr->creation_sequence_number = 0;
 	sdnv_decode(&custody_signal_ptr->creation_sequence_number,
 		payload + offset, &tmp);
 	offset += tmp;
 
+	custody_signal_ptr->src_endpoint_id_len = 0;
 	sdnv_decode(&custody_signal_ptr->src_endpoint_id_len,
 		payload + offset, &tmp);
 	offset += tmp;
