@@ -8,11 +8,12 @@ int main()
 	char value2[4] = "\x80\x80\x82\x7f";
 	unsigned int s;
 	unsigned char encoded[8] = {0};
-	unsigned int toencode = 200;
-	unsigned char todecode[8] = "\x80\x80\x80\x81\x48";
+	unsigned int toencode = 0;
+	unsigned char todecode[8] = "\x80\x80\x80\x80\x0";
 
 	// unsigned int value2;
 	unsigned int decoded = 0;
+	int ret;
 
 	// sdnv_encode(&s, &value, 3);
 	// sdnv_decode(&value2, &s);
@@ -27,15 +28,15 @@ int main()
 	// 	(unsigned)encoded[2], 
 	// 	(unsigned)encoded[3]);
 
-	sdnv_encode(&encoded, &toencode, 4);
+	ret = sdnv_encode(&encoded, &toencode, 4);
 	printf("encoeded is:\n");
 	for (i = 0; i < 8; i++){
 		printf("%02X ", encoded[i]);
 	}
-	printf("\n");
+	printf("ret = %d\n", ret);
 
-	sdnv_decode(&decoded, &todecode, NULL);
-	printf("decoded = %d 0x%X\n", decoded, decoded);
+	ret = sdnv_decode(&decoded, &todecode, NULL);
+	printf("decoded = %d 0x%X, ret = %d\n", decoded, decoded, ret);
 
 	return 0;
 }

@@ -1150,6 +1150,8 @@ int sdnv_decode(void* _to, void* _from, int* from_len_ptr)
 	int from_minuslead0bits;
 	int i,j;
 	int from_byte, from_bit, to_byte, to_bit;
+
+	printf("sdnv_decode()\n");
 	
 	to = _to;
 	from = _from;
@@ -1203,7 +1205,7 @@ int sdnv_decode(void* _to, void* _from, int* from_len_ptr)
 	for (i = 0; i < from_minuslead0bits; i++){
 		from_byte = (from_lead0bits + i)/7;
 		from_bit = ((from_lead0bits)+i)%7 + 1;
-		to_byte = (to_lead0bits+i)/8;
+		to_byte = to_len-1 - (to_lead0bits+i)/8;
 		to_bit = (to_lead0bits+i)%8;
 		// printf("from_byte = %d, from_bit = %d, "
 		// 	"to_byte = %d, to_bit = %d ",
