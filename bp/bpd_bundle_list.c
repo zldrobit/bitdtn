@@ -207,7 +207,7 @@ void bpd_bundle_list_process_custody(struct BUNDLE* bundle_ptr)
 	/* dst_bp_endpoint_id is local */
 	/* not need to store the bundle */
 	isreplica = bpd_bundle_list_replica_check(bundle_ptr);
-	if (!replica){
+	if (!isreplica){
 		if (bpd_bind_list_is_bp_endpoint_id_local(
 			&bundle_ptr->dst_bp_endpoint_id)){
 			bpd_bundle_list_pop(bundle_ptr);
