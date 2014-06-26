@@ -1153,7 +1153,7 @@ int sdnv_decode(void* _to, void* _from, int* from_len_ptr)
 	
 	to = _to;
 	from = _from;
-	from_len = 0;
+	from_len = 1;
 	while (get_bit(*from, 0) == 1){
 		from_len++;
 		from++;
@@ -1167,7 +1167,7 @@ int sdnv_decode(void* _to, void* _from, int* from_len_ptr)
 	from_lead0bits = 0;
 	for (i = 0; i < from_sigbits; i++){
 		from_byte = i/7;
-		from_bit = ((from_byte+1) + i)%7 + 1;
+		from_bit = i%7 + 1;
 		if (get_bit(from[from_byte], from_bit) == 1){
 			break;
 		}
@@ -1175,8 +1175,15 @@ int sdnv_decode(void* _to, void* _from, int* from_len_ptr)
 	}
 	from_minuslead0bits = from_sigbits - from_lead0bits;
 
+	/* not bit to put */
+	if (from_minuslead0bits == 0){
+		to_len = 1;
+		*to = 0;
+		return to_len;
+	}
+
 	/* length without leading zeroes */
-	to_len = from_minuslead0bits/8;
+	to_len = (from_minuslead0bits+7)/8;
 
 	/* flush the most significant byte on to */
 	if (to_len > 0){
@@ -1185,6 +1192,12 @@ int sdnv_decode(void* _to, void* _from, int* from_len_ptr)
 
 	/* calculate to leading zero bits by from's minuslead0bits */
 	to_lead0bits = (8 - from_minuslead0bits%8) % 8;
+	
+	// printf("from_len = %d\n", from_len);
+	// printf("to_len = %d, to_lead0bits = %d, from_sigbits = %d "
+	// 	"from_lead0bits = %d\n",
+	// 	to_len, to_lead0bits, from_sigbits, from_lead0bits);
+	// printf("from_minuslead0bits = %d\n", from_minuslead0bits);
 
 	from_byte = 0;
 	for (i = 0; i < from_minuslead0bits; i++){
@@ -1192,9 +1205,14 @@ int sdnv_decode(void* _to, void* _from, int* from_len_ptr)
 		from_bit = ((from_lead0bits)+i)%7 + 1;
 		to_byte = (to_lead0bits+i)/8;
 		to_bit = (to_lead0bits+i)%8;
+		// printf("from_byte = %d, from_bit = %d, "
+		// 	"to_byte = %d, to_bit = %d ",
+		// 	from_byte, from_bit, to_byte, to_bit);
 		j = get_bit(from[from_byte], from_bit);
 		ass_bit(to[to_byte], to_bit, j);
+		// printf("j = %d\n", j);
 	}
+	// printf("sdnv from_byte = %d\n", from_byte);
 	
 	return to_len;
 }
