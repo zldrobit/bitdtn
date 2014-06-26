@@ -753,6 +753,9 @@ void bundle_print_uid(struct BUNDLE* bundle_ptr)
 {
 	int i;
 
+	printf("dst bp endpoint id = %s:%s\n",
+		bundle_ptr->dst_bp_endpoint_id.scheme,
+		bundle_ptr->dst_bp_endpoint_id.ssp);
 	printf("src bp endpoint id = %s:%s\n",
 		bundle_ptr->src_bp_endpoint_id.scheme,
 		bundle_ptr->src_bp_endpoint_id.ssp);
@@ -1151,7 +1154,7 @@ int sdnv_decode(void* _to, void* _from, int* from_len_ptr)
 	int i,j;
 	int from_byte, from_bit, to_byte, to_bit;
 
-	printf("sdnv_decode()\n");
+	// printf("sdnv_decode()\n");
 	
 	to = _to;
 	from = _from;
