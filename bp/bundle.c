@@ -540,54 +540,67 @@ void bundle_decode(struct BUNDLE* bundle_ptr)
 	offset += tmp;
 
 	
+	bundle_ptr->primary_block_length = 0;
 	sdnv_decode(&bundle_ptr->primary_block_length, 
 		bundle_ptr->bundle + offset, &tmp);
 	offset += tmp;
 
+	bundle_ptr->dst_scheme_offset = 0;
 	sdnv_decode(&bundle_ptr->dst_scheme_offset,
 		bundle_ptr->bundle + offset, &tmp);
 	offset += tmp;
+	bundle_ptr->dst_ssp_offset = 0;
 	sdnv_decode(&bundle_ptr->dst_ssp_offset,
 		bundle_ptr->bundle + offset, &tmp);
 	offset += tmp;
 		
 
+	bundle_ptr->src_scheme_offset = 0;
 	sdnv_decode(&bundle_ptr->src_scheme_offset,
 		bundle_ptr->bundle + offset, &tmp);
 	offset += tmp;
+	bundle_ptr->src_ssp_offset = 0;
 	sdnv_decode(&bundle_ptr->src_ssp_offset,
 		bundle_ptr->bundle + offset, &tmp);
 	offset += tmp;
 		
 
+	bundle_ptr->report_to_scheme_offset = 0;
 	sdnv_decode(&bundle_ptr->report_to_scheme_offset,
 		bundle_ptr->bundle + offset, &tmp);
 	offset += tmp;
+	bundle_ptr->report_to_ssp_offset = 0;
 	sdnv_decode(&bundle_ptr->report_to_ssp_offset,
 		bundle_ptr->bundle + offset, &tmp);
 	offset += tmp;
 		
 
+	bundle_ptr->custodian_scheme_offset = 0;
 	sdnv_decode(&bundle_ptr->custodian_scheme_offset,
 		bundle_ptr->bundle + offset, &tmp);
 	offset += tmp;
+	bundle_ptr->custodian_ssp_offset = 0;
 	sdnv_decode(&bundle_ptr->custodian_ssp_offset,
 		bundle_ptr->bundle + offset, &tmp);
 	offset += tmp;
 		
 
+	bundle_ptr->creation_time = 0;
 	sdnv_decode(&bundle_ptr->creation_time,
 		bundle_ptr->bundle + offset, &tmp);
 	offset += tmp;
+	bundle_ptr->creation_sequence_number = 0;
 	sdnv_decode(&bundle_ptr->creation_sequence_number,
 		bundle_ptr->bundle + offset, &tmp);
 	offset += tmp;
 
 	printf("decode lifetime offset = %d\n", offset);
+	bundle_ptr->lifetime = 0;
 	sdnv_decode(&bundle_ptr->lifetime,
 		bundle_ptr->bundle + offset, &tmp);
 	offset += tmp;
 
+	bundle_ptr->dictionary_length = 0;	
 	sdnv_decode(&bundle_ptr->dictionary_length,
 		bundle_ptr->bundle + offset, &tmp);
 	offset += tmp;
@@ -631,6 +644,7 @@ void bundle_decode(struct BUNDLE* bundle_ptr)
 	offset += 1;
 
 	// bundle proc flags
+	bundle_ptr->block_proc_flags = 0;
 	sdnv_decode(&bundle_ptr->block_proc_flags,
 		bundle_ptr->bundle + offset, &tmp);
 	offset += tmp;
@@ -647,6 +661,7 @@ void bundle_decode(struct BUNDLE* bundle_ptr)
 		bundle_ptr->isadmin = 0;
 	}
 	
+	bundle_ptr->payload_block_length = 0;
 	sdnv_decode(&bundle_ptr->payload_block_length,
 		bundle_ptr ->bundle+ offset, &tmp);
 	offset += tmp;
