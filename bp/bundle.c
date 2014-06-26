@@ -9,6 +9,13 @@
 
 #define set_bit(a, bit) {(a) |= 1 << (7-(bit));}
 #define clr_bit(a, bit) {(a) &= ~(1 << (7-(bit)));}
+#define ass_bit(a, bit, v) \
+	if (v){ \
+		set_bit(a, bit); \
+	} \
+	else { \
+		clr_bit(a, bit); \
+	} 
 #define get_bit(a, bit) (!!((a) & (1 << (7-(bit)))))
 
 void printbits(unsigned char* a, int len)
@@ -327,189 +334,6 @@ void bundle_set_payload_length(struct BUNDLE* bundle_ptr,
 	unsigned int payload_block_length)
 {
 	bundle_ptr->payload_block_length = payload_block_length;
-}
-
-int sdnv_encode(void* _to, void* _from, int from_len)
-{
-	int to_len;
-	// int msb;
-	int msbyte_digits;
-	int bytes;
-	unsigned int tmp;
-	int i,j;
-	int offset;
-	unsigned char* to;
-	unsigned char* from;
-
-	to = _to;
-	from = _from;
-	// msb = from[from_len-1] & 0x80;
-	tmp = from[from_len-1];	
-	// printf("tmp = %d\n", tmp);
-	msbyte_digits = 0;
-	while (tmp > 0){
-		// printf("tmp = %d\n", tmp);
-		tmp >>= 1;
-		msbyte_digits++;
-	}
-	// printf("msbyte_digits = %d\n", msbyte_digits);
-	to_len = ((from_len-1)*8 + msbyte_digits + 6) / 7;
-	// number zero
-	if (to_len == 0){
-		to[0] = 0;
-		return 1;
-	}
-	// printf("to_len = %d\n", to_len);
-	for (i = 0; i < to_len; i++){
-		to[i] = 0;
-		if (i < to_len-1){
-			set_bit(to[i], 0);
-		}
-	}
-	// if offset > 0 padding exist
-	// else some bits in msbyte are discarded
-	offset = to_len*7 - from_len*8;
-	// printf("offset = %d\n", offset);
-	if (offset >= 0){
-		for (i = 0; i < to_len; i++){
-			for (j = 0; j < 7; j++){
-				if (from_len-1 - (i*7+j)/8 < 0){
-					break;
-				}
-				if (get_bit(from[from_len-1 - (i*7+j)/8], 
-					(i*7+j)%8) == 1){
-					set_bit(to[i+(j+offset)/7], 
-						(j+offset)%7 + 1);
-				}
-				else {
-					clr_bit(to[i+(j+offset)/7], 
-						(j+offset)%7 + 1);
-				}
-			}
-			if (j < 7){
-				break;
-			}
-		}
-	}
-	else {
-		offset = -offset;
-		for (i = 0; i < to_len; i++){
-			for (j = 0; j < 7; j++){
-				if (from_len-1 - (i*7+j+offset)/8 < 0){
-					printf("error encode\n");
-				}
-				if (get_bit(
-					from[from_len-1-(i*7+j+offset)/8], 
-					(i*7+j+offset)%8) == 1){
-					set_bit(to[i], j + 1);
-				}
-				else {
-					clr_bit(to[i], j + 1);
-				}
-			}
-		}
-	}
-	// printf("from_bits :");
-	// printbits(from, from_len);
-	// printf("to_bits :");
-	// printbits(to, to_len);
-	return to_len;
-}
-
-int sdnv_decode(void* _to, void* _from, int* from_len_ptr)
-{
-	int from_len;
-	int zero_len;
-	int to_len;
-	int offset;
-	int i,j,k;
-	int msbyte_digits,msbyte;
-	unsigned int tmp[SDNV_DECODE_MAXLEN] = {0};	
-	unsigned char* to;
-	unsigned char* from;
-
-	to = _to;
-	from = _from;
-
-	zero_len = 0;	
-	while (*from == 0x80){
-		from++;
-		zero_len++;
-	}
-
-	i = 0;
-	while (get_bit(from[i], 0) == 1){
-		i++;
-	}
-	from_len = i+1;
-	// printf("from_len = %d\n", from_len);
-	msbyte = from[0] & ~0x80;
-	msbyte_digits = 0;
-	while (msbyte > 0){
-		msbyte_digits++;
-		msbyte >>= 1;	
-	}
-	to_len = ((from_len-1)*7 + msbyte_digits + 7) / 8;
-	if (to_len == 0){
-		to[0] = 0;
-		if (from_len_ptr != NULL){
-			*from_len_ptr = zero_len + from_len;
-		}
-		return 1;	
-	}
-	// printf("to_len = %d\n", to_len);
-	offset = from_len*7 - to_len*8;
-	// printf("offset = %d\n", offset);
-	to[to_len-1] = 0;
-	if (offset >= 0){
-		for (i = 0; i < from_len; i++){
-			for (j = 0; j < 7; j++){
-				if (to_len-1 - (7*i+j)/8 < 0){
-					break;
-				}
-				if (get_bit(from[i+(j+offset)/7], 
-					(j+offset)%7 + 1) == 1){
-					set_bit(to[to_len-1 - (7*i+j)/8],
-						(7*i+j)%8);
-				}
-				else {
-					clr_bit(to[to_len-1 - (7*i+j)/8],
-						(7*i+j)%8);
-				}
-			}
-			if (j < 7){
-				break;
-			}
-		}
-	}
-	else {
-		offset = -offset;
-		for (i = 0; i < from_len; i++){
-			for (j = 0; j < 7; j++){
-				if (to_len-1 - (7*i+j+offset)/8 < 0){
-					printf("decode error\n");
-				}
-				if (get_bit(from[i], j+1) == 1){
-					set_bit(to[to_len-1 -
-						(7*i+j+offset)/8],
-						(7*i+j+offset)%8);
-				}
-				else {
-					clr_bit(to[to_len-1 -
-						(7*i+j+offset)/8],
-						(7*i+j+offset)%8);
-				}
-			}
-		}
-	}
-	// printf("from_bits: ");
-	// printbits(from, from_len);
-	// printf("to_bits: ");
-	// printbits(to, to_len);
-	if (from_len_ptr != NULL){
-		*from_len_ptr = zero_len + from_len;
-	}
-	return to_len;
 }
 
 int sdnv_encode_len(void* _from, int from_len)
@@ -1259,3 +1083,119 @@ void custody_signal_decode(struct CUSTODY_SIGNAL* custody_signal_ptr)
 	
 	custody_signal_ptr->payload_len = offset;
 }
+
+int sdnv_encode(void* _to, void* _from, int from_len)
+{
+	int to_len;
+	int from_bits;
+	int to_sigbits, to_lead0bits;
+	int i,j;
+	unsigned char* to;
+	unsigned char* from;
+	int to_byte, from_byte, to_bit, from_bit;
+
+	to = _to;
+	from = _from;
+	from_bits = 8*from_len;
+	to_len = (from_bits+6)/7;
+
+	to_sigbits = 7*to_len; 
+	to_lead0bits = to_sigbits - from_bits;
+
+	for (i = 0; i < to_len-1; i++){
+		set_bit(to[i], 0);
+	}
+	clr_bit(to[to_len-1], 0);
+
+	for (i = 0; i < to_lead0bits; i++){
+		clr_bit(to[0], i+1);
+	}
+
+	// printf("indicated bits init ended!\n");
+	// printf("to_len = %d\n", to_len);
+	// printf("to_sigbits = %d, to_lead0bits = %d\n",
+	// 	to_sigbits, to_lead0bits);
+
+	// printf("to is:\n");
+        // for (i = 0; i < 8; i++){
+        //         printf("%02X ", to[i]);
+        // }
+        // printf("\n");
+
+	to_byte = 0;
+	for (i = 0; i < from_bits; i++){
+		from_byte = from_len-1 - i/8;
+		from_bit = i%8;
+		to_byte = (to_lead0bits+i)/7;
+		to_bit = ((to_lead0bits) + i)%7 + 1;
+		// printf("from_byte = %d, from_bit = %d, "
+		// 	"to_byte = %d, to_bit = %d ",
+		// 	from_byte, from_bit, to_byte, to_bit);
+		j = get_bit(from[from_byte], from_bit);
+		ass_bit(to[to_byte], to_bit, j);
+		// printf("j = %d\n", j);
+	}
+
+	return to_len;
+}
+
+int sdnv_decode(void* _to, void* _from, int* from_len_ptr)
+{
+	unsigned char* to;
+	unsigned char* from;
+	int from_len;
+	int from_sigbits;
+	int to_len;
+	int from_lead0bits, to_lead0bits;
+	int from_minuslead0bits;
+	int i,j;
+	int from_byte, from_bit, to_byte, to_bit;
+	
+	to = _to;
+	from = _from;
+	from_len = 0;
+	while (get_bit(*from, 0) == 1){
+		from_len++;
+		from++;
+	}
+	if (from_len_ptr != NULL){
+		*from_len_ptr = from_len;
+	}
+
+	from = _from;
+	from_sigbits = 7*from_len;
+	from_lead0bits = 0;
+	for (i = 0; i < from_sigbits; i++){
+		from_byte = i/7;
+		from_bit = ((from_byte+1) + i)%7 + 1;
+		if (get_bit(from[from_byte], from_bit) == 1){
+			break;
+		}
+		from_lead0bits++;
+	}
+	from_minuslead0bits = from_sigbits - from_lead0bits;
+
+	/* length without leading zeroes */
+	to_len = from_minuslead0bits/8;
+
+	/* flush the most significant byte on to */
+	if (to_len > 0){
+		to[to_len-1] = 0;
+	}
+
+	/* calculate to leading zero bits by from's minuslead0bits */
+	to_lead0bits = (8 - from_minuslead0bits%8) % 8;
+
+	from_byte = 0;
+	for (i = 0; i < from_minuslead0bits; i++){
+		from_byte = (from_lead0bits + i)/7;
+		from_bit = ((from_lead0bits)+i)%7 + 1;
+		to_byte = (to_lead0bits+i)/8;
+		to_bit = (to_lead0bits+i)%8;
+		j = get_bit(from[from_byte], from_bit);
+		ass_bit(to[to_byte], to_bit, j);
+	}
+	
+	return to_len;
+}
+
