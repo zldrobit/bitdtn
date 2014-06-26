@@ -20,6 +20,7 @@
 struct BPD_FORWARD_TABLE bpd_forward_table;
 struct URI bpd_forward_table_custodian_bp_endpoint_id;
 extern struct DLLHASHTABLE* bundle_list_ptr;
+extern unsigned int nr_signal_send;
 
 void bpd_forward_table_init()
 {
@@ -283,6 +284,7 @@ int bpd_forward(struct BUNDLE* bundle_ptr)
 		}
 		// bundle_print(bundle_ptr);
 		printf("bundle_list_ptr->nr = %d\n", bundle_list_ptr->nr);
+		printf("nr_signal_send = %u\n", nr_signal_send);
 		printf("<<<<<<<<<<leave bpd_forward()\n\n");
 		return 0;
 	}
@@ -298,6 +300,7 @@ int bpd_forward(struct BUNDLE* bundle_ptr)
 			sizeof(local_uaddr));
 		// bundle_print(bundle_ptr);
 		printf("bundle_list_ptr->nr = %d\n", bundle_list_ptr->nr);
+		printf("nr_signal_send = %u\n", nr_signal_send);
 		printf("<<<<<<<<<<leave bpd_forward()\n\n");
 		return 0;
 	}
@@ -317,11 +320,13 @@ int bpd_forward(struct BUNDLE* bundle_ptr)
 		usleep(300);
 		// bundle_print(bundle_ptr);
 		printf("bundle_list_ptr->nr = %d\n", bundle_list_ptr->nr);
+		printf("nr_signal_send = %u\n", nr_signal_send);
 		printf("<<<<<<<<<<leave bpd_forward()\n\n");
 		return 0;
 	}
 	// bundle_print(bundle_ptr);
 	printf("bundle_list_ptr->nr = %d\n", bundle_list_ptr->nr);
+	printf("nr_signal_send = %u\n", nr_signal_send);
 	printf("<<<<<<<<<<leave bpd_forward()\n\n");
 	return -1;	
 }

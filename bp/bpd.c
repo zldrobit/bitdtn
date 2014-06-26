@@ -23,6 +23,7 @@ struct sockaddr_un bpd_uaddr;
 struct sockaddr_in bpd_iaddr;
 pthread_mutex_t bpd_creation_sequence_number_mutex = PTHREAD_MUTEX_INITIALIZER;
 unsigned int bpd_creation_sequence_number_counter = 0;
+unsigned int nr_signal_send = 0;
 
 void bpd_process_recv_bundle(char* buffer)
 {
@@ -110,6 +111,7 @@ void bpd_process_signal_send(struct BPD_SEND* signal_send_ptr,
 	struct URI report_to_bp_endpoint_id;
 	struct URI custodian_bp_endpoint_id;
 	
+	nr_signal_send++;
 	// strcpy(src_bp_endpoint_id,
 	// 	bpd_bind_list_map_uaddr_to_bp_endpoint_id(remote_uaddr_ptr));
 
