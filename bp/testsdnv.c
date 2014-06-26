@@ -8,8 +8,8 @@ int main()
 	char value2[4] = "\x80\x80\x82\x7f";
 	unsigned int s;
 	unsigned char encoded[8] = {0};
-	unsigned int toencode = 0;
-	unsigned char todecode[8] = "\x80\x80\x80\x80\x0";
+	unsigned int toencode = 255;
+	unsigned char todecode[8] = "\x80\x80\x81\x7f";
 
 	// unsigned int value2;
 	unsigned int decoded = 0;
