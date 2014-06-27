@@ -9,6 +9,9 @@
 #include "cfdp.h"
 	 pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER;
 	 pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
+	
+	 pthread_mutex_t meta_mtx = PTHREAD_MUTEX_INITIALIZER;
+	 pthread_cond_t meta_cond = PTHREAD_COND_INITIALIZER;
 
 int write_file(struct meta_data meta,FILE *fp){
 
@@ -225,6 +228,9 @@ int cfdp_open(char *sourcefile_name,char *destfile_name,char *buffer){
 	metadata_send(sourcefile_name,destfile_name,file_size);
 	printf("have send the metadata\n");
 	sleep(2);
+
+
+
 	//send the file
 
 	sendfile(sourcefile_name,buffer,file_size);
@@ -283,7 +289,38 @@ int metadata_send(char *sourcefile_name,char *destfile_name,int file_size){
     //printf("the send metadata destfile name is %s\n",meta.destination_file_name);
 
     metadata(meta,buffer_meta,p_meta);
-    send_PDU(buffer_meta,30);
+	struct timespec ts;
+	int ret;
+
+	while(1){
+
+		    send_PDU(buffer_meta,30);
+		clock_gettime(CLOCK_REALTIME,&ts);   //获取时间
+		ts.tv_sec += 3;   //经过3秒钟
+		printf(" waiting for the ACK of metadata\n");
+		ret = pthread_cond_timedwait(&meta_cond,&meta_mtx,&ts);
+		if (ret == ETIMEDOUT){  //超时
+
+			printf("metadata ETIMEDOUT\n");
+				//break;
+
+		}
+
+		else {    //未超时  有中断
+
+			printf("INTERRUPT\n");
+			pthread_cond_destroy(&meta_cond);
+
+			break;
+
+
+		}
+		}
+
+
+
+
+
 
 
 
