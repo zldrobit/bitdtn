@@ -91,7 +91,7 @@ int send_PDU(char *buffer,int PDU_size){
 
 
 		usleep(1000);
-		bp_sendto(bpsock, &dst_bp_endpoint_id, buffer, PDU_size,0);
+		bp_sendto(bpsock, &dst_bp_endpoint_id, buffer, PDU_size,1);
 		//printf("the dst_bp_endpoint_id is %s:%s\n",dst_bp_endpoint_id.scheme,dst_bp_endpoint_id.ssp);
 
 	return 0;

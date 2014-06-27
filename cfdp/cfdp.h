@@ -35,7 +35,7 @@
 #define Version 0
 #define header_length 16
 #define data_length 1000
-#define NAK_number 300
+#define NAK_number 1000
 
 
 int TSN;
