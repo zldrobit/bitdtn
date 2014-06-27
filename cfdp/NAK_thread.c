@@ -31,7 +31,7 @@ extern pthread_t tid_rate_thread;
 		nakflag->flag = 0;
 		struct NAK nak;
 							struct PDU_header *p_nak;
-							unsigned char NAK_buffer[423];
+							unsigned char NAK_buffer[4*NAK_number+23];
 							p_nak = (struct PDU_header *)malloc(sizeof(struct PDU_header));
 							p_nak->version = Version;
 							p_nak->type = file_dir;
@@ -52,7 +52,7 @@ extern pthread_t tid_rate_thread;
 							nak.directive_code = 8;
 
 							//memcpy(nak.NAK_offset,nakargu->nakflag->buffer,nakargu->nakflag->buffer[0]+1);
-							memcpy(nak.NAK_offset,nakargu->nakflag->buffer,100);
+							memcpy(nak.NAK_offset,nakargu->nakflag->buffer,NAK_number);
 							int k;
 							for(k=0;k<nak.NAK_offset[0];k++)
 							{
