@@ -29,5 +29,8 @@ extern pthread_mutex_t mtx ;
 extern pthread_cond_t cond ;
 extern pthread_mutex_t nak_mtx ;
 extern pthread_cond_t nak_cond ;
+extern pthread_mutex_t meta_mtx ;
+extern pthread_cond_t meta_cond ;
+
 
 #endif /* TIME_H_ */

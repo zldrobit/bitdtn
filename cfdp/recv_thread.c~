@@ -49,6 +49,7 @@ pthread_t tid_rate_thread;
 	int EOF_flag = 0;
 	number_of_received_pacekt = 0;
 	int ACK_EOF_flag = 0;
+	int ACK_metadata_flag = 0;
 
     FILE *fp;
 
@@ -174,55 +175,111 @@ pthread_t tid_rate_thread;
 
 			if((recv[0]) == 7){
 				/////////////////the metadata///////////////
+
+
+                               ///////////////////////////send the ack of metadata//////////////////////
+				struct PDU_header *p_ack_metadata;
+
+				p_ack_metadata = (struct PDU_header *)malloc(sizeof(struct PDU_header));
+
+				p_ack_metadata->version = Version;
+				p_ack_metadata->type = file_dir;
+				p_ack_metadata->dir = to_file_recv;
+				p_ack_metadata->mode = acknowledged;
+				p_ack_metadata->CRCflag = not_present;
+				p_ack_metadata->reserved1 = 0;
+				p_ack_metadata->reserved2 = 0;
+				p_ack_metadata->reserved3 = 0;
+				p_ack_metadata->PDUdatalength = 2;
+				p_ack_metadata->length_of_entity_ID = 7;
+				p_ack_metadata->length_of_TSN = 32;
+				p_ack_metadata->source_ID = p->destination_ID;
+				p_ack_metadata->TSN = 1;
+				p_ack_metadata->destination_ID = p->source_ID;
+				unsigned char buffer_ACK_metadata[17];
+				char ACK_metadata[1] ;
+				ACK_metadata[0] = 3;
+				PDU_encode(p,ACK_metadata, buffer_ACK_metadata,1);
+				send_PDU(buffer_ACK_metadata,sizeof(buffer_ACK_metadata));
+				printf("have send the ack of metadata\n");
+					
+
+
+
+				if(metadata_flag == 0)
+				{
+					pthread_create(&tid_rate_thread, NULL, rate_thread, NULL);
+					printf("**********has start the counting thread***********\n");
+	   			          unsigned char buffer_filesize[32];
+	        			bits2chars(recv+2,buffer_filesize,32,0);
+	        			meta.file_size = char_exchange(32,buffer_filesize);
+	        			meta.segmentation_control = (recv[1] >> 7);
+	        			segment_flag = meta.segmentation_control;
+	        			printf("the segment flag is  %d\n",meta.segmentation_control);
+	        			if(meta.segmentation_control == 0)
+	        			{
+	        				segment_number = meta.file_size/data_length;
+	        			}
+	        			//char CFDP_buffer_data[meta.file_size];
+			    		meta.destination_file_name_length = recv[6];
+			    		//printf("the file name size is %d\n",file_name_size);
+
+			   		 bzero(meta.destination_file_name,meta.destination_file_name_length+1);
+
+			  		  memcpy(meta.destination_file_name,recv+11,meta.destination_file_name_length);
+                			printf("the recieved file name in the metadata is %s,length is %ld\n",file_name,sizeof(recv));
+    			 		fp = fopen((const char*)meta.destination_file_name,"w");
+    					if(NULL == fp ) {
+
+    						printf("File:\t Can Not Open To Write\n");
+    						exit(1);
+
+    					}
+    					else{
+
+    						printf("can open to write\n");
+
+    					}
+               				 metadata_recv = 1;
+                			//TSN = p -> TSN;
+					metadata_flag == 1;
+				}
 				
-				pthread_create(&tid_rate_thread, NULL, rate_thread, NULL);
-				printf("**********has start the counting thread***********\n");
+			}
 
-	             unsigned char buffer_filesize[32];
-	        	bits2chars(recv+2,buffer_filesize,32,0);
-	        	meta.file_size = char_exchange(32,buffer_filesize);
-	        	meta.segmentation_control = (recv[1] >> 7);
-	        	segment_flag = meta.segmentation_control;
-	        	printf("the segment flag is  %d\n",meta.segmentation_control);
-	        	if(meta.segmentation_control == 0)
-	        	{
-	        		segment_number = meta.file_size/data_length;
-	        	}
-	        	//char CFDP_buffer_data[meta.file_size];
-			    meta.destination_file_name_length = recv[6];
-			    //printf("the file name size is %d\n",file_name_size);
 
-			    bzero(meta.destination_file_name,meta.destination_file_name_length+1);
+			if(recv[0] == 3)
+			{
+ 				//////////////////////////the ack of metadata//////////////////////////////
 
-			    memcpy(meta.destination_file_name,recv+11,meta.destination_file_name_length);
-                printf("the recieved file name in the metadata is %s,length is %ld\n",file_name,sizeof(recv));
-    			 fp = fopen((const char*)meta.destination_file_name,"w");
-    			if(NULL == fp ) {
+				if(ACK_metadata_flag == 0)
+					{
+						sleep(4);
+						printf("have recieved the ACK of metadata\n");
+						pthread_mutex_lock(&meta_mtx);
+						pthread_cond_signal(&meta_cond);
+						pthread_mutex_unlock(&meta_mtx);
+						ACK_metadata_flag ++;					
+					}
 
-    				printf("File:\t Can Not Open To Write\n");
-    				exit(1);
 
-    			}
-    			else{
 
-    				printf("can open to write\n");
 
-    			}
-                metadata_recv = 1;
-                //TSN = p -> TSN;
+
 
 			}
+
 			if(recv[0] == 8)
 				////////////////the NAK//////////////////////
 			{
 				int retrans_num;
 				//char offset_NAK[100];
-				unsigned char offset_retran[400];
-				int offset_NAK[100];
+				unsigned char offset_retran[4*NAK_number];
+				int offset_NAK[NAK_number];
 				char buffer_retrans[header_length+data_length+4];
 				char buffer_retrans_data[data_length];
 				//memcpy(offset_NAK,recv+9,100);
-				memcpy(offset_retran,recv+9,400);
+				memcpy(offset_retran,recv+9,4*NAK_number);
 				//retrans_num = offset_NAK[0];
 
 
@@ -235,7 +292,7 @@ pthread_t tid_rate_thread;
 
 
 				int i;
-				for(i = 0;i<100;i++)
+				for(i = 0;i<NAK_number;i++)
 				{
 					//offset_NAK[i] = (((int)offset_retran[4*i])&255)<<24+(((int)offset_retran[4*i+1])&255)<<16+(((int)offset_retran[4*i+2])&255)<<8+(((int)offset_retran[4*i+3])&255);
 		
@@ -315,7 +372,8 @@ pthread_t tid_rate_thread;
 
 		if(p->type == file_data)
 		{
-
+		if(metadata_flag ==1 )
+		{
 			number_of_received_pacekt = number_of_received_pacekt + 1;
 			if(segment_flag == 0)
 			{
@@ -324,7 +382,7 @@ pthread_t tid_rate_thread;
 				unsigned char buffer_offset[32];
 				bits2chars(recv,buffer_offset,32,0);
 				offset = char_exchange(32,buffer_offset);
-				printf("the recived PDU is %d,offset is %d\n",sizeof(recv),offset);
+				printf("the recived PDU is %ld,offset is %d\n",sizeof(recv),offset);
 				if((offset+data_length)<meta.file_size)
 				{
 					if(test ==0 && offset == 0)
@@ -368,7 +426,7 @@ pthread_t tid_rate_thread;
 
 		}
 
- 		
+ 		}
 	}
 
 

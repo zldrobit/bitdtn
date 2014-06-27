@@ -127,6 +127,7 @@ void init(int argc,char**argv){
 
 	TSN = 0;
 	bzero(CFDP_buffer_NAK,1000);
+	metadata_flag = 0;
 /*
 	if((selfSocket = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
 		perror("socket");
