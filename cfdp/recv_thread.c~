@@ -53,6 +53,9 @@ pthread_t tid_rate_thread;
 
     FILE *fp;
 
+	struct NAK_flag *nakflag;
+	struct NAK_arguments *nakargu;
+
 	while(1){
 
 		unsigned char recvbuf[1024];
@@ -95,13 +98,10 @@ pthread_t tid_rate_thread;
 				///////////send the ack of eof///////////////////
 				struct ACK_data ack_eof = {6,4,0,0,0};
 				struct PDU_header *p_ack_eof;
-				struct NAK_flag *nakflag;
-				struct NAK_arguments *nakargu;
+
 
 				p_ack_eof = (struct PDU_header *)malloc(sizeof(struct PDU_header));
-				nakargu = (struct NAK_arguments *)malloc(sizeof(struct NAK_arguments));
-				nakflag = (struct NAK_flag *)malloc(sizeof(struct NAK_flag));
-				nakflag->flag = 0;
+
 
 				p_ack_eof->version = Version;
 				p_ack_eof->type = file_dir;
@@ -129,6 +129,10 @@ pthread_t tid_rate_thread;
 
 				if(EOF_flag == 0)
 				{
+
+				nakargu = (struct NAK_arguments *)malloc(sizeof(struct NAK_arguments));
+				nakflag = (struct NAK_flag *)malloc(sizeof(struct NAK_flag));
+				nakflag->flag = 0;
 				check_missing(meta,nakflag);
 				printf("the nakflag is %d\n",nakflag->flag);
 				if(nakflag->flag ==  0)
@@ -208,6 +212,8 @@ pthread_t tid_rate_thread;
 
 				if(metadata_flag == 0)
 				{
+					metadata_flag = 1;
+					printf("have received the metadata,the metadata_flag =%d\n",metadata_flag);					
 					pthread_create(&tid_rate_thread, NULL, rate_thread, NULL);
 					printf("**********has start the counting thread***********\n");
 	   			          unsigned char buffer_filesize[32];
@@ -242,7 +248,7 @@ pthread_t tid_rate_thread;
     					}
                				 metadata_recv = 1;
                 			//TSN = p -> TSN;
-					metadata_flag == 1;
+					
 				}
 				
 			}
@@ -372,7 +378,8 @@ pthread_t tid_rate_thread;
 
 		if(p->type == file_data)
 		{
-		if(metadata_flag ==1 )
+  		   printf("the metadata flag is %d\n",metadata_flag);
+		if(metadata_flag ==  1 )
 		{
 			number_of_received_pacekt = number_of_received_pacekt + 1;
 			if(segment_flag == 0)
