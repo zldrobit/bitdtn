@@ -10,10 +10,17 @@
 #include "cfdp.h"
 #include "time.h"
 
+
+
 pthread_t tid_rate_thread;
+struct recv_inf *recieve;
+struct rate_arguments *rateargu;
+int recv_length;
+////////////recv_length--1000//////////
+
  void* recv_thread(){
 
-	printf("listening......\n");
+
 	//int recvsocket;
 	//struct sockaddr_in recv_addr;
 	//recvsocket = socket(AF_INET,SOCK_DGRAM,0);
@@ -41,16 +48,16 @@ pthread_t tid_rate_thread;
     int segment_number = 0;
     unsigned char file_name[4];
 
-    struct meta_data meta;
-    int metadata_recv = 0;
-    int NAK_flag;
+   	 struct meta_data meta;
+    	int metadata_recv = 0;
+  	  int NAK_flag;
 
-    int test = 0;
+    	int test = 0;
 	int EOF_flag = 0;
 	number_of_received_pacekt = 0;
 	int ACK_EOF_flag = 0;
 	int ACK_metadata_flag = 0;
-struct recv_inf recieve;
+
 
 
 
@@ -59,17 +66,25 @@ struct recv_inf recieve;
 
 	struct NAK_flag *nakflag;
 	struct NAK_arguments *nakargu;
-	struct rate_arguments *rateargu;
+	unsigned char recvbuf[1024];
+	int segment_flag = 0 ;
+	int myerrno;
+	int filelength;
 
+
+
+
+
+	printf("listening......\n");
+
+	
 	while(1){
 
-		unsigned char recvbuf[1024];
+
 		bzero(recvbuf,1024);
 		struct PDU_header *p;
 		p = (struct PDU_header *)malloc(sizeof(struct PDU_header));
-		int segment_flag = 0 ;
-		int myerrno;
-		int filelength;
+		recieve = (struct recv_inf *)malloc(sizeof(struct recv_inf));
 
 		//int filelength = recvfrom(recvsocket,recvbuf,1024,0,NULL,NULL);
 		printf("bpsock = %u\n", bpsock);
@@ -86,19 +101,19 @@ struct recv_inf recieve;
 		}
 		printf("have recived the data %d\n",filelength);
 
-		int recv_length;
-		recv_length = filelength - 16;
-		unsigned char recv[recv_length];
-		bzero(recv,recv_length);
 
-		if(PDU_discode(p,recv,recvbuf,recv_length)==0){
+		recv_length = filelength - 16;
+	        unsigned char recv_[recv_length];
+		bzero(recv_,recv_length);////////////recv_length--1000//////////
+
+		if(PDU_discode(p,recv_,recvbuf,recv_length)==0){
 			printf("have discaped,%d\n",filelength);
 		}
 
 		if(p->type == file_dir)
 		{
-			if(recv[0] == 4){
-				printf("this is the EOF PDU the directive code is %d\n",recv[0]);
+			if(recv_[0] == 4){
+				printf("this is the EOF PDU the directive code is %d\n",recv_[0]);
 
 				///////////send the ack of eof///////////////////
 				struct ACK_data ack_eof = {6,4,0,0,0};
@@ -143,23 +158,26 @@ struct recv_inf recieve;
 					printf("the nakflag is %d\n",nakflag->flag);
 					if(nakflag->flag ==  0)
 					{
+						
 						write_file(meta,fp,recieve);
 						printf("the file is recieved completed in the first time\n");
 						pthread_cancel(tid_rate_thread);
+						
 					}
 					else
 					{
-
+						
 						pthread_t tid_NAK_thread;
 						nakargu->meta = meta;
 						nakargu-> p = p;
 						nakargu->nakflag = nakflag;
 						nakargu->fp = fp;
 						nakargu->recieve = recieve;
-						printf("in the recv thread :the retrans number is %d,nakflag is %d\n",nakargu->nakflag->buffer[0],nakargu->nakflag->flag);
+						printf("in the recv thread :the retrans number is %d,nakflag is %d\n",
+							nakargu->nakflag->buffer[0],nakargu->nakflag->flag);
 
 						pthread_create(&tid_NAK_thread, NULL, NAK_thread, nakargu);
-
+						
 
 
 
@@ -175,8 +193,8 @@ struct recv_inf recieve;
 
 			EOF_flag = 1;
 			}
-			if((recv[0]) == 6){
-				if((recv[1]>>4) == 4){   ////////////the ack of EOF//////////////
+			if((recv_[0]) == 6){
+				if((recv_[1]>>4) == 4){   ////////////the ack of EOF//////////////
 
 					if(ACK_EOF_flag == 0)
 					{
@@ -190,7 +208,7 @@ struct recv_inf recieve;
 				}
 			}
 
-			if((recv[0]) == 7){
+			if((recv_[0]) == 7){
 				/////////////////the metadata///////////////
 
  				///////////////////IN THE NAK MODE////////////////////
@@ -239,9 +257,9 @@ struct recv_inf recieve;
 					pthread_create(&tid_rate_thread, NULL, rate_thread, rateargu);
 					printf("**********has start the counting thread***********\n");
 	   			          unsigned char buffer_filesize[32];
-	        			bits2chars(recv+2,buffer_filesize,32,0);
+	        			bits2chars(recv_+2,buffer_filesize,32,0);
 	        			meta.file_size = char_exchange(32,buffer_filesize);
-	        			meta.segmentation_control = (recv[1] >> 7);
+	        			meta.segmentation_control = (recv_[1] >> 7);
 	        			segment_flag = meta.segmentation_control;
 	        			printf("the segment flag is  %d\n",meta.segmentation_control);
 	        			if(meta.segmentation_control == 0)
@@ -249,13 +267,13 @@ struct recv_inf recieve;
 	        				segment_number = meta.file_size/data_length;
 	        			}
 	        			//char CFDP_buffer_data[meta.file_size];
-			    		meta.destination_file_name_length = recv[6];
+			    		meta.destination_file_name_length = recv_[6];
 			    		//printf("the file name size is %d\n",file_name_size);
 
 			   		 bzero(meta.destination_file_name,meta.destination_file_name_length+1);
 
-			  		  memcpy(meta.destination_file_name,recv+11,meta.destination_file_name_length);
-                			printf("the recieved file name in the metadata is %s,length is %ld\n",file_name,sizeof(recv));
+			  		  memcpy(meta.destination_file_name,recv_+11,meta.destination_file_name_length);
+                			printf("the recieved file name in the metadata is %s,length is %ld\n",file_name,sizeof(recv_));
     			 		fp = fopen((const char*)meta.destination_file_name,"w");
     					if(NULL == fp ) {
 
@@ -276,7 +294,7 @@ struct recv_inf recieve;
 			}
 
 
-			if(recv[0] == 3)
+			if(recv_[0] == 3)
 			{
  				//////////////////////////the ack of metadata//////////////////////////////
 
@@ -297,7 +315,7 @@ struct recv_inf recieve;
 
 			}
 
-			if(recv[0] == 8)
+			if(recv_[0] == 8)
 				////////////////the NAK//////////////////////
 			{
 				int retrans_num;
@@ -306,8 +324,8 @@ struct recv_inf recieve;
 				int offset_NAK[NAK_number];
 				char buffer_retrans[header_length+data_length+4];
 				char buffer_retrans_data[data_length];
-				//memcpy(offset_NAK,recv+9,100);
-				memcpy(offset_retran,recv+9,4*NAK_number);
+				//memcpy(offset_NAK,recv_+9,100);
+				memcpy(offset_retran,recv_+9,4*NAK_number);
 				//retrans_num = offset_NAK[0];
 
 				offset_NAK[0] = offset_retran[0]*(2^24)+offset_retran[1]*(2^16)+offset_retran[2]*(256)+offset_retran[3];
@@ -411,16 +429,16 @@ struct recv_inf recieve;
 				int offset;
 
 				unsigned char buffer_offset[32];
-				bits2chars(recv,buffer_offset,32,0);
+				bits2chars(recv_,buffer_offset,32,0);
 				offset = char_exchange(32,buffer_offset);
-				printf("the recived PDU is %ld,offset is %d\n",sizeof(recv),offset);
+				printf("the recived PDU is %ld,offset is %d\n",sizeof(recv_),offset);
 				if((offset+data_length)<meta.file_size)
 				{
 					if(test ==0 && offset == 0)
 					{}
 					else
 					{
-					memcpy(&(recieve.CFDP_buffer_data[offset/data_length]),recv+4,data_length);
+					memcpy(&(recieve->CFDP_buffer_data[offset/data_length]),recv_+4,data_length);
 					CFDP_buffer_NAK[offset/data_length] = 1		;
 					printf("recvdata is put in buffer %d\n",offset/data_length);
 					}
@@ -432,7 +450,7 @@ struct recv_inf recieve;
 				{
 					if(test != 0)
 					{
-						memcpy(&recieve.CFDP_buffer_data[offset/data_length],recv+4,(meta.file_size-offset));
+						memcpy(&recieve->CFDP_buffer_data[offset/data_length],recv_+4,(meta.file_size-offset));
 						CFDP_buffer_NAK[offset/data_length] = 1;
 						printf("the last recvdata is put in buffer %d\n",offset/data_length);
 						//printf("%s\n",CFDP_buffer_data[offset/data_length]);
@@ -447,7 +465,7 @@ struct recv_inf recieve;
 			else if(segment_flag == 1)
 			{
 
-				memcpy(&recieve.CFDP_buffer_data[0],recv+4,meta.file_size);
+				memcpy(&recieve->CFDP_buffer_data[0],recv_+4,meta.file_size);
 
 
 			}

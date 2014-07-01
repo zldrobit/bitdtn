@@ -156,20 +156,27 @@ int main(int argc, char **argv){
 
 	pthread_t tid_recv_thread;
 	void* ret_recv;
-	init(argc,argv);
-	pthread_create(&tid_recv_thread, NULL, recv_thread, NULL);
 
+	
 	char file_name[FILE_NAME_MAX_SIZE+1];
 	char dest_add[1];
 	char work_mode[1];
 	//char buffer[1024];
 	//bzero(buffer,1024);
 	char recv_file_name[] = {'a','b','c'};
+	
+
+	init(argc,argv);
+	pthread_create(&tid_recv_thread, NULL, recv_thread, NULL);
+
 	bzero(file_name, FILE_NAME_MAX_SIZE+1);
+
+
 	printf("please input the destination address:\t");
 	scanf("%s",dest_add);
 	uri_assign(&dst_bp_endpoint_id, "bitdtn", dest_add);
-	
+	printf("the dest_add is writen");	
+
 	printf("please choose the working mode---------0:un_NAK,1:NAK:\t");
         scanf("%s",work_mode);
 	workmode = work_mode[0];	
