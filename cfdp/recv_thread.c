@@ -50,11 +50,16 @@ pthread_t tid_rate_thread;
 	number_of_received_pacekt = 0;
 	int ACK_EOF_flag = 0;
 	int ACK_metadata_flag = 0;
+struct recv_inf recieve;
+
+
+
 
     FILE *fp;
 
 	struct NAK_flag *nakflag;
 	struct NAK_arguments *nakargu;
+	struct rate_arguments *rateargu;
 
 	while(1){
 
@@ -129,38 +134,46 @@ pthread_t tid_rate_thread;
 
 				if(EOF_flag == 0)
 				{
-
-				nakargu = (struct NAK_arguments *)malloc(sizeof(struct NAK_arguments));
-				nakflag = (struct NAK_flag *)malloc(sizeof(struct NAK_flag));
-				nakflag->flag = 0;
-				check_missing(meta,nakflag);
-				printf("the nakflag is %d\n",nakflag->flag);
-				if(nakflag->flag ==  0)
+				if(workmode == 1)/////////////////////in the NAK MODE///////////////////////////
 				{
-					write_file(meta,fp);
-					printf("the file is recieved completed in the first time\n");
-					pthread_cancel(tid_rate_thread);
+					nakargu = (struct NAK_arguments *)malloc(sizeof(struct NAK_arguments));
+					nakflag = (struct NAK_flag *)malloc(sizeof(struct NAK_flag));
+					nakflag->flag = 0;
+					check_missing(meta,nakflag);
+					printf("the nakflag is %d\n",nakflag->flag);
+					if(nakflag->flag ==  0)
+					{
+						write_file(meta,fp,recieve);
+						printf("the file is recieved completed in the first time\n");
+						pthread_cancel(tid_rate_thread);
+					}
+					else
+					{
+
+						pthread_t tid_NAK_thread;
+						nakargu->meta = meta;
+						nakargu-> p = p;
+						nakargu->nakflag = nakflag;
+						nakargu->fp = fp;
+						nakargu->recieve = recieve;
+						printf("in the recv thread :the retrans number is %d,nakflag is %d\n",nakargu->nakflag->buffer[0],nakargu->nakflag->flag);
+
+						pthread_create(&tid_NAK_thread, NULL, NAK_thread, nakargu);
+
+
+
+
+					}
+					}
+					
 				}
-				else
+				if(workmode == 0)//////////////////////IN UN_NAK MODE//////////////////
 				{
 
-					pthread_t tid_NAK_thread;
-					nakargu->meta = meta;
-					nakargu-> p = p;
-					nakargu->nakflag = nakflag;
-					nakargu->fp = fp;
-					printf("in the recv thread :the retrans number is %d,nakflag is %d\n",nakargu->nakflag->buffer[0],nakargu->nakflag->flag);
-
-					pthread_create(&tid_NAK_thread, NULL, NAK_thread, nakargu);
-
-
-
-
 				}
-				}
-				EOF_flag = 1;
+				
 
-
+			EOF_flag = 1;
 			}
 			if((recv[0]) == 6){
 				if((recv[1]>>4) == 4){   ////////////the ack of EOF//////////////
@@ -180,7 +193,9 @@ pthread_t tid_rate_thread;
 			if((recv[0]) == 7){
 				/////////////////the metadata///////////////
 
-
+ 				///////////////////IN THE NAK MODE////////////////////
+				if(workmode == 1)
+			{
                                ///////////////////////////send the ack of metadata//////////////////////
 				struct PDU_header *p_ack_metadata;
 
@@ -207,14 +222,21 @@ pthread_t tid_rate_thread;
 				send_PDU(buffer_ACK_metadata,sizeof(buffer_ACK_metadata));
 				printf("have send the ack of metadata\n");
 					
-
+			}
 
 
 				if(metadata_flag == 0)
 				{
 					metadata_flag = 1;
-					printf("have received the metadata,the metadata_flag =%d\n",metadata_flag);					
-					pthread_create(&tid_rate_thread, NULL, rate_thread, NULL);
+					printf("have received the metadata,the metadata_flag =%d\n",metadata_flag);			
+
+
+					rateargu = (struct rate_arguments *)malloc(sizeof(struct rate_arguments));
+					rateargu->meta = meta;
+					rateargu->recieve = recieve;
+					rateargu->fp = fp;
+							
+					pthread_create(&tid_rate_thread, NULL, rate_thread, rateargu);
 					printf("**********has start the counting thread***********\n");
 	   			          unsigned char buffer_filesize[32];
 	        			bits2chars(recv+2,buffer_filesize,32,0);
@@ -398,7 +420,7 @@ pthread_t tid_rate_thread;
 					{}
 					else
 					{
-					memcpy(&CFDP_buffer_data[offset/data_length],recv+4,data_length);
+					memcpy(&(recieve.CFDP_buffer_data[offset/data_length]),recv+4,data_length);
 					CFDP_buffer_NAK[offset/data_length] = 1		;
 					printf("recvdata is put in buffer %d\n",offset/data_length);
 					}
@@ -410,7 +432,7 @@ pthread_t tid_rate_thread;
 				{
 					if(test != 0)
 					{
-						memcpy(&CFDP_buffer_data[offset/data_length],recv+4,(meta.file_size-offset));
+						memcpy(&recieve.CFDP_buffer_data[offset/data_length],recv+4,(meta.file_size-offset));
 						CFDP_buffer_NAK[offset/data_length] = 1;
 						printf("the last recvdata is put in buffer %d\n",offset/data_length);
 						//printf("%s\n",CFDP_buffer_data[offset/data_length]);
@@ -425,7 +447,7 @@ pthread_t tid_rate_thread;
 			else if(segment_flag == 1)
 			{
 
-				memcpy(&CFDP_buffer_data[0],recv+4,meta.file_size);
+				memcpy(&recieve.CFDP_buffer_data[0],recv+4,meta.file_size);
 
 
 			}

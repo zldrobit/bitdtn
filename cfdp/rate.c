@@ -1,4 +1,5 @@
 #include "cfdp.h"
+#include "time.h"
 
 
 void* rate_thread(void *ptr)
@@ -31,5 +32,35 @@ void* rate_thread(void *ptr)
 	temp = number_of_received_pacekt;
 	printf("******************%d\n",rate);
 	times++;
+
+
+	////////////in the un_nak mode//////////////////////
+	///////////////check if the file is recieved all///////////////////
+	if(workmode == 0)
+	{
+		int segment_number;		
+		struct rate_arguments *rateargu;
+		rateargu = (struct rate_arguments *)malloc(sizeof(struct rate_arguments));
+		rateargu = ptr;
+	        if(rateargu->meta.segmentation_control == 0)
+	        {
+	        		   if(rateargu->meta.file_size%data_length == 0)
+				   {
+		   			segment_number = rateargu->meta.file_size/data_length;
+
+	   				}
+	 			  else
+	  			 {
+		 			  segment_number = rateargu->meta.file_size/data_length+1;
+	 			  }
+	        }
+
+		if(number_of_received_pacekt == segment_number)
+		{
+			write_file(rateargu->meta,rateargu->fp,rateargu->recieve);
+		}
+
+	}
+
 	}
 }
