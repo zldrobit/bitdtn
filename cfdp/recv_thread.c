@@ -288,12 +288,14 @@ pthread_t tid_rate_thread;
 				memcpy(offset_retran,recv+9,4*NAK_number);
 				//retrans_num = offset_NAK[0];
 
+				offset_NAK[0] = offset_retran[0]*(2^24)+offset_retran[1]*(2^16)+offset_retran[2]*(256)+offset_retran[3];
+				retrans_num = offset_NAK[0];
 
-				printf("the retrans number in nak is %d\n",offset_retran[3]);
+				printf("the retrans number in nak is %d\n",retrans_num);
 				int j;
-				for(j=0;j<4*offset_retran[3];j++)
+				for(j=0;j<retrans_num;j++)
 				{
-					printf("the recieved nak is %d\n",offset_retran[j+4]);
+					printf(" in char the recieved nak is %d\n",offset_retran[j+4]);
 				}
 
 
@@ -304,11 +306,11 @@ pthread_t tid_rate_thread;
 		
 					offset_NAK[i] = offset_retran[4*i]*(2^24)+offset_retran[4*i+1]*(2^16)+offset_retran[4*i+2]*(256)+offset_retran[4*i+3];
 				}
-				retrans_num = offset_NAK[0];
+
 
 				for(j=0;j<offset_NAK[0];j++)
 				{
-					printf("the recieved nak is %d\n",offset_NAK[j+1]);
+					printf("the retrans_num = %d,the recieved nak is %d\n",retrans_num,offset_NAK[j+1]);
 				} 
 				
                 printf("have recieved the NAK ,need to be retransmitted  number is %d\n",retrans_num);
