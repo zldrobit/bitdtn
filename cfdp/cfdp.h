@@ -42,7 +42,7 @@ int TSN;
 char buffer[3000000];
 
 //char CFDP_buffer_NAK[1000];
-int CFDP_buffer_NAK[100000];
+int CFDP_buffer_NAK[10000];
 int number_of_received_pacekt;
 int metadata_flag;
 int workmode;
@@ -50,7 +50,7 @@ int workmode;
 
 
 struct recv_inf{
-	char CFDP_buffer_data[100000][data_length];
+	char CFDP_buffer_data[10000][data_length];
 	int segment_flag;
 	int ID;
 };
@@ -159,10 +159,19 @@ struct NAK_arguments{
 	struct meta_data meta;
 	struct PDU_header *p;
 	struct NAK_flag *nakflag;
-	struct recv_inf recieve;
+	struct recv_inf *recieve;
 	FILE* fp;
 
 };
+
+struct rate_arguments{
+
+	struct meta_data meta;
+	struct recv_inf *recieve;
+	FILE* fp;
+
+};
+
 
  void* NAK_thread(void *ptr);
  void* recv_thread();
@@ -178,7 +187,7 @@ int NAK_PDU(struct NAK nak,unsigned char *CFDP_buffer_NAK,struct PDU_header *p )
 int bit_exchange(int k,int b,unsigned char *buffer);
 int char_exchange(int k,unsigned char*buffer);
 
-int write_file(struct meta_data meta,FILE *fp,struct recv_inf recieve);
+int write_file(struct meta_data meta,FILE *fp,struct recv_inf *recieve);
 int check_missing(struct meta_data meta,struct NAK_flag *nakflag);
 int send_PDU(char *buffer,int PDU_size);
 int sendfile(char *sourcefile_name,char *buffer,int file_size);

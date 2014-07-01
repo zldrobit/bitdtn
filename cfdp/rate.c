@@ -1,5 +1,5 @@
 #include "cfdp.h"
-#include "time.h"
+//#include "time.h"
 
 
 void* rate_thread(void *ptr)
