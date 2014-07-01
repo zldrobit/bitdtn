@@ -33,4 +33,12 @@ extern pthread_mutex_t meta_mtx ;
 extern pthread_cond_t meta_cond ;
 
 
+struct rate_arguments{
+
+	struct meta_data meta;
+	struct recv_inf recieve;
+	FILE* fp;
+
+};
+
 #endif /* TIME_H_ */

@@ -13,7 +13,7 @@
 	 pthread_mutex_t meta_mtx = PTHREAD_MUTEX_INITIALIZER;
 	 pthread_cond_t meta_cond = PTHREAD_COND_INITIALIZER;
 
-int write_file(struct meta_data meta,FILE *fp){
+int write_file(struct meta_data meta,FILE *fp,struct recv_inf recieve){
 
 	printf("in the writing part...\n");
 
@@ -33,14 +33,14 @@ int write_file(struct meta_data meta,FILE *fp){
 	{
 		if((i == (meta.file_size/data_length)) && (meta.file_size/data_length != 0))
 		{
-			fwrite(CFDP_buffer_data[i],(meta.file_size - (meta.file_size/data_length)*data_length),sizeof(char),fp);
+			fwrite(recieve.CFDP_buffer_data[i],(meta.file_size - (meta.file_size/data_length)*data_length),sizeof(char),fp);
 			//printf("writing.....%s\n",CFDP_buffer_data[i]);
 			fclose(fp);
 		}
 		else
 		{
 
-			fwrite(CFDP_buffer_data[i],data_length,sizeof(char),fp);
+			fwrite(recieve.CFDP_buffer_data[i],data_length,sizeof(char),fp);
 			//printf("writing.....%s\n",CFDP_buffer_data[i]);
 		}
 
@@ -289,6 +289,13 @@ int metadata_send(char *sourcefile_name,char *destfile_name,int file_size){
     //printf("the send metadata destfile name is %s\n",meta.destination_file_name);
 
     metadata(meta,buffer_meta,p_meta);
+ if(workmode == 0)
+{
+	send_PDU(buffer_meta,30);
+}
+
+if(workmode == 1)
+{
 	struct timespec ts;
 	int ret;
 
@@ -317,7 +324,7 @@ int metadata_send(char *sourcefile_name,char *destfile_name,int file_size){
 		}
 		}
 
-
+}
 
 
 

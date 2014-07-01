@@ -161,13 +161,20 @@ int main(int argc, char **argv){
 
 	char file_name[FILE_NAME_MAX_SIZE+1];
 	char dest_add[1];
+	char work_mode[1];
 	//char buffer[1024];
 	//bzero(buffer,1024);
 	char recv_file_name[] = {'a','b','c'};
 	bzero(file_name, FILE_NAME_MAX_SIZE+1);
 	printf("please input the destination address:\t");
 	scanf("%s",dest_add);
-	 uri_assign(&dst_bp_endpoint_id, "bitdtn", dest_add);
+	uri_assign(&dst_bp_endpoint_id, "bitdtn", dest_add);
+	
+	printf("please choose the working mode---------0:un_NAK,1:NAK:\t");
+        scanf("%s",work_mode);
+	workmode = work_mode[0];	
+
+	
 	printf("Please Input File Name On Server:\t");
 	scanf("%s", file_name);
 	cfdp_put_request(1,file_name,recv_file_name);

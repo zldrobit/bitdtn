@@ -80,7 +80,7 @@ extern pthread_t tid_rate_thread;
 			printf("the nakflag is %d\n",nakflag->flag);
 			if(nakflag->flag == 0)
 			{
-				write_file(nakargu->meta,nakargu->fp)	;
+				write_file(nakargu->meta,nakargu->fp,nakargu->recieve)	;
 		pthread_cancel(tid_rate_thread);
                 printf("the missing part is recieved all\n");
                 //pthread_cond_destroy(&nak_cond);
