@@ -52,7 +52,14 @@ extern pthread_t tid_rate_thread;
 							nak.directive_code = 8;
 
 							//memcpy(nak.NAK_offset,nakargu->nakflag->buffer,nakargu->nakflag->buffer[0]+1);
-							memcpy(nak.NAK_offset,nakargu->nakflag->buffer,NAK_number);
+							int i;/////////////////////for test///////////////////////
+							for(i =0;i<nakargu->nakflag->buffer[0];i++)
+							{
+
+								printf("the retranmit is %d\n",nakargu->nakflag->buffer[i+1]);
+							}
+							memcpy(nak.NAK_offset,nakargu->nakflag->buffer,4*NAK_number);
+							printf("the retransmit number is %d\n",nak.NAK_offset[0]);
 							int k;
 							for(k=0;k<nak.NAK_offset[0];k++)
 							{
