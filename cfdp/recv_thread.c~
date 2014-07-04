@@ -428,7 +428,11 @@ int recv_length;
 		if(p->type == file_data)
 		{
   		  // printf("the metadata flag is %d\n",metadata_flag);
+<<<<<<< HEAD
 		if((metadata_flag ==  1 && workmode == 1) || workmode == 0 )
+=======
+		if((metadata_flag ==  1 && workmode == 1)||workmode == 0 )
+>>>>>>> origin
 		{
 			number_of_received_pacekt = number_of_received_pacekt + 1;
 			printf("the number of received packets is %d\n",number_of_received_pacekt);
@@ -449,7 +453,7 @@ int recv_length;
 					printf("recvdata is put in buffer %d\n",offset/data_length);
 					
 					//printf("recvdata is put in buffer %d\n",offset/data_length);
-					printf("%s\n",recieve->CFDP_buffer_data[offset/data_length]);
+					//printf("%s\n",recieve->CFDP_buffer_data[offset/data_length]);
 			/*write_return = fwrite(recieve->CFDP_buffer_data[0],sizeof(char),data_length,fp);
 			printf("writing.....,%s\n",recieve->CFDP_buffer_data[0]);
 			perror("fwrite");*/
@@ -465,7 +469,7 @@ int recv_length;
 						printf("the last recvdata is put in buffer %d\n",offset/data_length);
 						//printf("%s\n",CFDP_buffer_data[offset/data_length]);
 					
-					printf("%s\n",recieve->CFDP_buffer_data[offset/data_length]);
+					//printf("%s\n",recieve->CFDP_buffer_data[offset/data_length]);
 			/*write_return = fwrite(recieve->CFDP_buffer_data[1],sizeof(char),(meta.file_size - (meta.file_size/data_length)*data_length),fp);
 			//printf("writing.....i=%d,%s\n",i,recieve->CFDP_buffer_data[i]);
 			printf("writing the last part of the file,the length is %d\n",write_return);
