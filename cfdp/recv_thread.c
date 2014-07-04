@@ -421,7 +421,7 @@ int recv_length;
 		if(p->type == file_data)
 		{
   		  // printf("the metadata flag is %d\n",metadata_flag);
-		if(metadata_flag ==  1 )
+		if((metadata_flag ==  1 && workmode == 1)||workmode == 0 )
 		{
 			number_of_received_pacekt = number_of_received_pacekt + 1;
 			if(segment_flag == 0)

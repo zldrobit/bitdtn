@@ -179,7 +179,7 @@ int main(int argc, char **argv){
 
 	printf("please choose the working mode---------0:un_NAK,1:NAK:\t");
         scanf("%s",work_mode);
-	workmode = work_mode[0];	
+	workmode = work_mode[0]-48;	
 
 	
 	printf("Please Input File Name On Server:\t");

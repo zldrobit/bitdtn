@@ -16,7 +16,7 @@ pthread_t tid_rate_thread;
 struct recv_inf *recieve;
 struct rate_arguments *rateargu;
 int recv_length;
-unsigned char recv_[5000];////////////recv_length--1000//////////
+////////////recv_length--1000//////////
 
  void* recv_thread(){
 
@@ -103,8 +103,8 @@ unsigned char recv_[5000];////////////recv_length--1000//////////
 
 
 		recv_length = filelength - 16;
-	
-		bzero(recv_,5000);////////////recv_length--1000//////////
+	        unsigned char recv_[recv_length];
+		bzero(recv_,recv_length);////////////recv_length--1000//////////
 
 		if(PDU_discode(p,recv_,recvbuf,recv_length)==0){
 			printf("have discaped,%d\n",filelength);
@@ -420,14 +420,7 @@ unsigned char recv_[5000];////////////recv_length--1000//////////
 
 		if(p->type == file_data)
 		{
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-  		   printf("the metadata flag is %d\n",metadata_flag);
->>>>>>> wenting/add_cfdp
-=======
   		  // printf("the metadata flag is %d\n",metadata_flag);
->>>>>>> wenting/add_cfdp
 		if(metadata_flag ==  1 )
 		{
 			number_of_received_pacekt = number_of_received_pacekt + 1;
