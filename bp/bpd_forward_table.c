@@ -258,6 +258,40 @@ void bpd_forward_table_delete_by_origin_bp_endpoint_id(
 	}
 }
 
+struct sockaddr_in forward_nexthop(struct BUNDLE* bundle_ptr,
+	struct sockaddr_in default_nexthop)
+{
+	struct sockaddr_in secondary_relay_iaddr;
+	static unsigned int data_forward_count = 0;
+
+	if (bundle_is_admin_record(bundle_ptr)){
+		return default_nexthop;
+	}
+
+	if (bundle_ptr->isnexthopassigned){
+		return bundle_ptr->nexthop;
+	}
+
+	/* not admin record and not assigned */
+	secondary_relay_iaddr.sin_family = AF_INET;
+	secondary_relay_iaddr.sin_port = htons(BUNDLE_PORT);
+	secondary_relay_iaddr.sin_addr.s_addr = inet_addr(
+		SECONDARY_RELAY_IADDR);
+
+	printf("data_forward_count = %u\n", data_forward_count);
+	bundle_ptr->isnexthopassigned = 1;
+	if (data_forward_count % 2 == 1){		
+		bundle_ptr->nexthop = 
+			secondary_relay_iaddr;
+	}
+	else {
+		bundle_ptr->nexthop = default_nexthop;
+	}
+	data_forward_count++;
+	
+	return bundle_ptr->nexthop;
+}
+
 /* and dispatch */
 int bpd_forward(struct BUNDLE* bundle_ptr)
 {
@@ -266,13 +300,6 @@ int bpd_forward(struct BUNDLE* bundle_ptr)
 	struct sockaddr_in remote_iaddr;
 	struct sockaddr_in tmp_iaddr;
 	struct sockaddr_un local_uaddr;
-	struct sockaddr_in secondary_relay_iaddr;
-	static unsigned int data_forward_count = 0;
-
-	secondary_relay_iaddr.sin_family = AF_INET;
-	secondary_relay_iaddr.sin_port = htons(BUNDLE_PORT);
-	secondary_relay_iaddr.sin_addr.s_addr = inet_addr(
-		SECONDARY_RELAY_IADDR);
 
 	printf("\n>>>>>>>>>>enter bpd_foward()\n");
 	origin_bp_endpoint_id = bundle_ptr->dst_bp_endpoint_id;
@@ -320,17 +347,10 @@ int bpd_forward(struct BUNDLE* bundle_ptr)
 		&origin_bp_endpoint_id);
 	if (i != -1){
 		printf("forward branch\n");
-		printf("data_forward_count = %u\n", data_forward_count);
-		tmp_iaddr = bpd_forward_table.forward_structs[i].next_iaddr;
-		remote_iaddr = tmp_iaddr;
-		if (!bundle_ptr->iscustody){
-			if (data_forward_count % 2 == 1){		
-				remote_iaddr = secondary_relay_iaddr;
-			}
-			data_forward_count++;
-		}
 		printf("remote_iaddr inet addr = %s\n", inet_ntoa(
 			remote_iaddr.sin_addr));
+		tmp_iaddr = bpd_forward_table.forward_structs[i].next_iaddr;
+		remote_iaddr = forward_nexthop(bundle_ptr, tmp_iaddr);	
 		sendto(bpd_isock, bundle_ptr->bundle, 
 			bundle_ptr->bundle_len, 0,
 			(struct sockaddr*) &remote_iaddr, 

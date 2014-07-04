@@ -164,6 +164,7 @@ void bpd_process_signal_send(struct BPD_SEND* signal_send_ptr,
 		bpd_creation_sequence_number_counter++);
 	pthread_mutex_unlock(&bpd_creation_sequence_number_mutex);
 
+	signal_send_ptr->isnexthopassigned = 0;
 	bpd_bundle_list_insert(
 		(struct BUNDLE*) &signal_send_ptr->version);
 

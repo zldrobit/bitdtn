@@ -1,6 +1,9 @@
 #ifndef _BUNDLE_H_
 #define _BUNDLE_H_
 
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netinet/ip.h>
 #include "uri.h"
 
 #define BUNDLE_PAYLOAD_MAXLEN 	4096
@@ -56,6 +59,8 @@ enum CUSTODY_SIGNAL_REASON_CODE{
 	unsigned int bundle_proc_flags; \
 	int iscustody; \
 	int isadmin; \
+	int isnexthopassigned; \
+	struct sockaddr_in nexthop; \
 	unsigned int primary_block_length; \
 	struct URI dst_bp_endpoint_id; \
 	unsigned int dst_scheme_offset; \
