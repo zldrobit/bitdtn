@@ -171,7 +171,7 @@ int sendfile(char *sourcefile_name,char *buffer,int file_size){
     	}
     	else
     		printf("the encode have failed\n");
-    	send_PDU(buffer_send,(data_length+16));
+    	send_PDU(buffer_send,(file_size+16));
     }
 
 
@@ -386,7 +386,7 @@ int segment_procedure(int file_size,struct PDU_header *p, char *buffer){
     	else
     	{
     		memcpy(buffer_recvdata+4,buffer+offset,(file_size-offset));
-    		printf("it's the last segmentation %ld\n",strlen(buffer_recvdata));
+    		printf("it's the last segmentation %ld,the length is %d\n",strlen(buffer_recvdata+4),file_size-offset);
     	}
 
     	printf("the sending offset is %d,the number of segmentation is %d\n",offset,(n+1));
