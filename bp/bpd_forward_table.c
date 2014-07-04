@@ -266,7 +266,7 @@ int bpd_forward(struct BUNDLE* bundle_ptr)
 	struct sockaddr_in remote_iaddr;
 	struct sockaddr_un local_uaddr;
 	struct sockaddr_in secondary_relay_iaddr;
-	unsigned int forward_count = 0;
+	static unsigned int forward_count = 0;
 
 	secondary_relay_iaddr.sin_family = AF_INET;
 	secondary_relay_iaddr.sin_port = htons(BUNDLE_PORT);
@@ -319,6 +319,7 @@ int bpd_forward(struct BUNDLE* bundle_ptr)
 		&origin_bp_endpoint_id);
 	if (i != -1){
 		printf("forward branch\n");
+		printf("forward_count = %u\n", forward_count);
 		if (forward_count % 2 == 0){
 			remote_iaddr = 
 				bpd_forward_table.forward_structs[i].next_iaddr;
@@ -326,6 +327,8 @@ int bpd_forward(struct BUNDLE* bundle_ptr)
 		else {
 			remote_iaddr = secondary_relay_iaddr;
 		}
+		printf("remote_iaddr inet addr = %s\n", inet_ntoa(
+			remote_iaddr.sin_addr));
 		forward_count++;
 		sendto(bpd_isock, bundle_ptr->bundle, 
 			bundle_ptr->bundle_len, 0,
