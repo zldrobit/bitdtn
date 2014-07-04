@@ -84,7 +84,7 @@ unsigned int replica_list_hashfunc(struct HASHTABLE* hashtable_ptr, void* key)
 
 int replica_list_compfunc(char* l, char* r)
 {
-	return strncmp(l, r, SHA_DIGEST_LENGTH);
+	return memcmp(l, r, SHA_DIGEST_LENGTH);
 }
 
 static void voidfunc()
