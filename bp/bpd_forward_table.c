@@ -322,11 +322,9 @@ int bpd_forward(struct BUNDLE* bundle_ptr)
 		printf("forward branch\n");
 		printf("data_forward_count = %u\n", data_forward_count);
 		tmp_iaddr = bpd_forward_table.forward_structs[i].next_iaddr;
+		remote_iaddr = tmp_iaddr;
 		if (!bundle_ptr->iscustody){
-			if (data_forward_count % 2 == 0){
-				remote_iaddr = tmp_iaddr;
-			}
-			else {
+			if (data_forward_count % 2 == 1){		
 				remote_iaddr = secondary_relay_iaddr;
 			}
 			data_forward_count++;
