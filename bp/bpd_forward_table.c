@@ -347,10 +347,10 @@ int bpd_forward(struct BUNDLE* bundle_ptr)
 		&origin_bp_endpoint_id);
 	if (i != -1){
 		printf("forward branch\n");
-		printf("remote_iaddr inet addr = %s\n", inet_ntoa(
-			remote_iaddr.sin_addr));
 		tmp_iaddr = bpd_forward_table.forward_structs[i].next_iaddr;
 		remote_iaddr = forward_nexthop(bundle_ptr, tmp_iaddr);	
+		printf("remote_iaddr inet addr = %s\n", inet_ntoa(
+			remote_iaddr.sin_addr));
 		sendto(bpd_isock, bundle_ptr->bundle, 
 			bundle_ptr->bundle_len, 0,
 			(struct sockaddr*) &remote_iaddr, 
