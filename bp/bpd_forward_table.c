@@ -17,6 +17,8 @@
 #include "bundle.h"
 #include "uri.h"
 
+#define SECONDARY_RELAY_IADDR	"10.15.4.195"
+
 struct BPD_FORWARD_TABLE bpd_forward_table;
 struct URI bpd_forward_table_custodian_bp_endpoint_id;
 extern struct DLLHASHTABLE* bundle_list_ptr;
@@ -263,6 +265,13 @@ int bpd_forward(struct BUNDLE* bundle_ptr)
 	int i;
 	struct sockaddr_in remote_iaddr;
 	struct sockaddr_un local_uaddr;
+	struct sockaddr_in secondary_relay_iaddr;
+	unsigned int forward_count = 0;
+
+	secondary_relay_iaddr.sin_family = AF_INET;
+	secondary_relay_iaddr.sin_port = htons(BUNDLE_PORT);
+	secondary_relay_iaddr.sin_addr.s_addr = inet_addr(
+		SECONDARY_RELAY_IADDR);
 
 	printf("\n>>>>>>>>>>enter bpd_foward()\n");
 	origin_bp_endpoint_id = bundle_ptr->dst_bp_endpoint_id;
@@ -310,8 +319,14 @@ int bpd_forward(struct BUNDLE* bundle_ptr)
 		&origin_bp_endpoint_id);
 	if (i != -1){
 		printf("forward branch\n");
-		remote_iaddr = 
-			bpd_forward_table.forward_structs[i].next_iaddr;
+		if (forward_count % 2 == 0){
+			remote_iaddr = 
+				bpd_forward_table.forward_structs[i].next_iaddr;
+		}
+		else {
+			remote_iaddr = secondary_relay_iaddr;
+		}
+		forward_count++;
 		sendto(bpd_isock, bundle_ptr->bundle, 
 			bundle_ptr->bundle_len, 0,
 			(struct sockaddr*) &remote_iaddr, 
