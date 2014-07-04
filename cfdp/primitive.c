@@ -19,7 +19,10 @@ int write_file(struct meta_data meta,FILE *fp,struct recv_inf *recieve){
 
 
 	int i;
+	int write_return;
 	int number;
+	if(meta.segmentation_control == 0)
+	{
 	   if(meta.file_size%data_length == 0)
 	   {
 		   number = meta.file_size/data_length;
@@ -33,20 +36,40 @@ int write_file(struct meta_data meta,FILE *fp,struct recv_inf *recieve){
 	{
 		if((i == (meta.file_size/data_length)) && (meta.file_size/data_length != 0))
 		{
-			fwrite(recieve->CFDP_buffer_data[i],(meta.file_size - (meta.file_size/data_length)*data_length),sizeof(char),fp);
-			//printf("writing.....%s\n",CFDP_buffer_data[i]);
+			write_return = fwrite(recieve->CFDP_buffer_data[i],sizeof(char),(meta.file_size - (meta.file_size/data_length)*data_length),fp);
+			//printf("writing.....i=%d,%s\n",i,recieve->CFDP_buffer_data[i]);
+			printf("writing the last part of the file,the length is %d\n",write_return);
+			perror("fwrite");
 			fclose(fp);
+			//exit(0);
 		}
 		else
 		{
 
-			fwrite(recieve->CFDP_buffer_data[i],data_length,sizeof(char),fp);
-			//printf("writing.....%s\n",CFDP_buffer_data[i]);
+			write_return = fwrite(recieve->CFDP_buffer_data[i],sizeof(char),data_length,fp);
+			//printf("writing.....i=%d,%s\n",i,recieve->CFDP_buffer_data[i]);
+			perror("fwrite");
 		}
 
 	}
 
+	}
+	if(meta.segmentation_control == 1)
+	{
+		printf("in the writing part:the recieved file is %s\n",recieve->CFDP_buffer_data[0]);
+		write_return = fwrite(recieve->CFDP_buffer_data[0],sizeof(char),meta.file_size,fp);
 
+		/*if(ferror(fp))
+		{
+			perror("fwrite");		
+
+			clearerr(fp);
+		}
+
+		printf("the return is %d\n",write_return);
+		fclose(fp);*/
+		
+	}
 	return 0;
 }
 

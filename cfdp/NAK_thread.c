@@ -81,9 +81,9 @@ extern pthread_t tid_rate_thread;
 			if(nakflag->flag == 0)
 			{
 				write_file(nakargu->meta,nakargu->fp,nakargu->recieve)	;
-		pthread_cancel(tid_rate_thread);
-                printf("the missing part is recieved all\n");
-                //pthread_cond_destroy(&nak_cond);
+				pthread_cancel(tid_rate_thread);
+              			  printf("the missing part is recieved all\n");
+             			   //pthread_cond_destroy(&nak_cond);
 				return NULL;
 		
 				break;
@@ -94,7 +94,7 @@ extern pthread_t tid_rate_thread;
 				NAK_PDU(nak,NAK_buffer,nakargu->p );
 				send_PDU(NAK_buffer,sizeof(NAK_buffer));
 			}
-			//	break;
+
 
 		}
 

@@ -46,7 +46,8 @@ int CFDP_buffer_NAK[10000];
 int number_of_received_pacekt;
 int metadata_flag;
 int workmode;
-
+int EOF_flag;
+int write_flag;
 
 
 struct recv_inf{

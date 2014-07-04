@@ -128,6 +128,7 @@ void init(int argc,char**argv){
 	TSN = 0;
 	bzero(CFDP_buffer_NAK,1000);
 	metadata_flag = 0;
+	write_flag = 0;
 /*
 	if((selfSocket = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
 		perror("socket");
@@ -175,11 +176,12 @@ int main(int argc, char **argv){
 	printf("please input the destination address:\t");
 	scanf("%s",dest_add);
 	uri_assign(&dst_bp_endpoint_id, "bitdtn", dest_add);
-	printf("the dest_add is writen");	
+	printf("the dest_add is writen\n");	
 
 	printf("please choose the working mode---------0:un_NAK,1:NAK:\t");
         scanf("%s",work_mode);
-	workmode = work_mode[0];	
+	workmode = work_mode[0]-48;
+	printf("the work mode is %d\n",workmode);	
 
 	
 	printf("Please Input File Name On Server:\t");

@@ -30,6 +30,7 @@ extern pthread_mutex_t nak_mtx ;
 extern pthread_cond_t nak_cond ;
 extern pthread_mutex_t meta_mtx ;
 extern pthread_cond_t meta_cond ;
+extern struct recv_inf *recieve;
 
 
 
