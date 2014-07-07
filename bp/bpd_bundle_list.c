@@ -180,7 +180,21 @@ void bpd_bundle_list_pop(struct BUNDLE* bundle_ptr)
 
 void bpd_bundle_list_insert(struct BUNDLE* bundle_ptr)
 {
+	unsigned char sha1_digest[SHA_DIGEST_LENGTH];
+	int i;
+	unsigned char* p;
+
 	bundle_encode(bundle_ptr);
+	SHA((const unsigned char*)bundle_ptr->bundle,
+		bundle_ptr->bundle_len,
+		sha1_digest);
+	printf("DIGEST: ");
+	p = sha1_digest;
+	for (i = 0; i < 20; i++){
+		printf("%02X", *p++);
+	}
+	printf("\n");
+		
 
 	if (!bundle_ptr->iscustody){
 		bpd_bundle_list_pop(bundle_ptr);
@@ -220,20 +234,42 @@ void bpd_bundle_list_process_custody(struct BUNDLE* bundle_ptr)
 
 int bpd_bundle_list_replica_check(struct BUNDLE* bundle_ptr)
 {
-	char* sha1_digest;
+	unsigned char* sha1_digest;
 	unsigned int* insert_time;
+	struct DLLHASHTABLE_HASHTABLEVALUE* hashtablevalue_ptr;
+	int i;
+	unsigned char* p;
+	struct DLLHASHTABLE_DLLITEM* dllitem_ptr;
+	struct HASHITEM* hashitem_ptr;
 
 	sha1_digest = (char*)malloc(SHA_DIGEST_LENGTH);
 	SHA((const unsigned char*)bundle_ptr->bundle,
 		bundle_ptr->bundle_len,
 		sha1_digest);
 		
-	if (dllhashtable_search(replica_list_ptr, sha1_digest) != NULL){
+	hashtablevalue_ptr = 
+		dllhashtable_search(replica_list_ptr, sha1_digest);
+	if (hashtablevalue_ptr != NULL){
 		/* replica custody bundle dectected */
 		printf("replica custody bundle dectected!\n");
 		printf("creation time = %d, creation seq nr = %d\n",
 			bundle_ptr->creation_time,
 			bundle_ptr->creation_sequence_number);
+		printf("the inserted sha1 value is\n");
+		dllitem_ptr = hashtablevalue_ptr->dllitem_ptr;
+		hashitem_ptr = dllitem_ptr->hashitem_ptr;
+		p = (unsigned char*)hashitem_ptr->key;
+		for (i = 0; i < 20; i++){
+			printf("%02X", *p++);
+		}
+		printf("\n");
+		printf("the current sha1 value is\n");
+		p = sha1_digest;
+		for (i = 0; i < 20; i++){
+			printf("%02X", *p++);
+		}
+		printf("\n");
+
 		free(sha1_digest);
 		return 1;
 	}
